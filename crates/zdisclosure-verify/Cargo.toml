@@ -1,0 +1,32 @@
+[package]
+name = "zdisclosure-verify"
+description = "Checks a shielded note Disclosure against the Zcash transaction it covers"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+clap.workspace = true
+zdisclosure-common.workspace = true
+
+[dev-dependencies]
+hex.workspace = true
+incrementalmerkletree.workspace = true
+orchard.workspace = true
+rand_chacha.workspace = true
+rand_core.workspace = true
+sapling.workspace = true
+transparent.workspace = true
+zcash_disclosure.workspace = true
+zcash_keys.workspace = true
+zcash_primitives = { workspace = true, features = ["test-dependencies"] }
+zcash_protocol.workspace = true
+zdisclosure-create.workspace = true
+zdisclosure-inspect = { path = "../zdisclosure-inspect" }
+zip32.workspace = true
