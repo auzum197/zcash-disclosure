@@ -1,0 +1,21 @@
+[package]
+name = "zdisclosure-create"
+description = "Produces a Sapling note Disclosure for outputs of a Zcash transaction from a UFVK"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+clap.workspace = true
+qrcode.workspace = true
+zcash_disclosure.workspace = true
+zcash_keys.workspace = true
+zcash_protocol.workspace = true
+zdisclosure-cli.workspace = true
+zdisclosure-core.workspace = true

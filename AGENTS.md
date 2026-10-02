@@ -105,4 +105,4 @@ Goal: produce prose and code that reads as if written by a specific, competent h
 - The format and verification rules belong to `zcash_disclosure/SPEC.md` on the `feat/zcash-disclosure` branch of auzum197/librustzcash. Do not restate them here.
 - A Disclosure is unsigned. Call it a disclosure in help text and output, never a proof of payment.
 - Never accept a UFVK in argv or echo any part of one to stderr.
-- `cargo test --workspace` runs the end-to-end tests. They build real Orchard-circuit proofs, which is why dependencies are optimized in the dev profile.
+- `cargo test --workspace` runs the end-to-end tests. They build Sapling-only transactions with mocked proofs. Dependencies are optimized in the dev profile, so the cryptography in them runs fast.

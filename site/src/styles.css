@@ -1,0 +1,763 @@
+/* zdisc site — design system.
+   Dark first, light follows the system. Every surface is layered: page, material,
+   raised card, filled well. Groups are set apart by space and by surface, with no
+   hairlines between them. Type is the system font, tracked tight when large. */
+
+:root {
+  color-scheme: dark;
+  --bg: #0a0a0c;
+  --bg-glow: rgba(245, 181, 46, 0.05);
+  --material: rgba(17, 17, 21, 0.68);
+  --card-top: rgba(255, 255, 255, 0.05);
+  --card-bottom: rgba(255, 255, 255, 0.03);
+  --well: rgba(255, 255, 255, 0.06);
+  --fill: rgba(255, 255, 255, 0.12);
+  --thumb: rgba(255, 255, 255, 0.16);
+  --text: #f5f4f0;
+  --text-2: #e4e3de;
+  --text-3: #d8d7d2;
+  --text-4: #a09f9a;
+  --accent: #f5f4f0;
+  --accent-hi: #f5f4f0;
+  --accent-ink: #141410;
+  --ok: #f5f4f0;
+  --ok-bg: rgba(255, 255, 255, 0.09);
+  --fail: #f5f4f0;
+  --fail-bg: rgba(255, 255, 255, 0.06);
+  --warn: #f5f4f0;
+  --warn-bg: rgba(255, 255, 255, 0.06);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.16), 0 6px 24px rgba(0, 0, 0, 0.16);
+  --shadow-pop: 0 0.5px 1px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.12);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --dur-1: 150ms;
+  --dur-2: 250ms;
+  --r-card: 18px;
+  --r-control: 12px;
+  --font: ui-sans-serif, -apple-system, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #f6f5f1;
+    --bg-glow: rgba(28, 27, 22, 0.03);
+    --material: rgba(252, 251, 248, 0.7);
+    --card-top: rgba(255, 255, 255, 0.9);
+    --card-bottom: rgba(255, 255, 255, 0.6);
+    --well: rgba(28, 27, 22, 0.05);
+    --fill: rgba(28, 27, 22, 0.08);
+    --thumb: rgba(255, 255, 255, 0.9);
+    --text: #201f1b;
+    --text-2: #3d3c36;
+    --text-3: #515047;
+    --text-4: #89887e;
+    --accent: #201f1b;
+    --accent-hi: #201f1b;
+    --accent-ink: #ffffff;
+    --ok: #201f1b;
+    --ok-bg: rgba(28, 27, 22, 0.07);
+    --fail: #201f1b;
+    --fail-bg: rgba(28, 27, 22, 0.05);
+    --warn: #201f1b;
+    --warn-bg: rgba(28, 27, 22, 0.05);
+    --shadow-card: 0 1px 2px rgba(32, 30, 24, 0.04), 0 6px 24px rgba(32, 30, 24, 0.04);
+    --shadow-pop: 0 0.5px 1px rgba(32, 30, 24, 0.06), 0 2px 8px rgba(32, 30, 24, 0.05);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+  /* Reserve the vertical gutter on every page, so navigating between a long page
+     and a short one does not shove the centered layout sideways. */
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  font: 400 16.5px/1.6 var(--font);
+  color: var(--text);
+  background:
+    radial-gradient(100rem 46rem at 78% -16%, var(--bg-glow), transparent 62%),
+    var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--text) 22%, transparent);
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 680;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+code,
+.mono {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  letter-spacing: 0;
+}
+
+/* ---- shell ---- */
+
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--material);
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .top {
+    background: var(--bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+.top-inner {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.wordmark {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  font-size: 1.02rem;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+
+.wordmark img {
+  display: block;
+}
+
+/* the Apple signature: a segmented control for wayfinding. Equal-width segments and an
+   absolutely positioned thumb, so switching never reflows anything. */
+.segmented {
+  position: relative;
+  margin-left: auto;
+  display: inline-grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  gap: 2px;
+  background: var(--well);
+  border-radius: 999px;
+  padding: 3px;
+}
+
+.segmented-thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 0;
+  border-radius: 999px;
+  background: var(--thumb);
+  box-shadow: var(--shadow-pop);
+  transition: transform 200ms var(--ease-out);
+  will-change: transform;
+  pointer-events: none;
+}
+
+.segmented a {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  text-decoration: none;
+  color: var(--text-3);
+  font-size: 0.88rem;
+  font-weight: 550;
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: color var(--dur-1) ease;
+}
+
+.segmented a.active {
+  color: var(--text);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .segmented a:not(.active):hover {
+    color: var(--text);
+  }
+}
+
+.segmented a:active {
+  transform: scale(0.97);
+  transition: transform 100ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segmented-thumb {
+    transition: none;
+  }
+}
+
+@media (max-width: 30rem) {
+  .top-inner {
+    padding: 0 1rem;
+    gap: 0.75rem;
+  }
+  .segmented a {
+    padding: 0.3rem 0.55rem;
+    font-size: 0.82rem;
+  }
+}
+
+main {
+  flex: 1;
+  width: 100%;
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 5rem;
+}
+
+main.narrow {
+  max-width: 50rem;
+}
+
+/* a section: a title, then its content after a wide gap from the section above */
+.block {
+  margin-top: 4.5rem;
+}
+
+.section-title {
+  font-size: 1.35rem;
+  line-height: 1.2;
+  margin: 0 0 1.1rem;
+}
+
+/* ---- type ---- */
+
+h1 {
+  font-size: clamp(2rem, 3.6vw, 2.6rem);
+  line-height: 1.06;
+  letter-spacing: -0.028em;
+}
+
+.lede {
+  color: var(--text-2);
+  max-width: 42rem;
+  font-size: 1.13rem;
+  line-height: 1.55;
+  margin: 0.9rem 0 0;
+}
+
+.overline {
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 0 0 0.9rem;
+}
+
+.stack > * + * {
+  margin-top: 1.4rem;
+}
+
+/* a raised card: results, and the groups on the overview */
+.result,
+.matrix-scroll,
+.tool-list a {
+  background: linear-gradient(var(--card-top), var(--card-bottom));
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+}
+
+.result {
+  padding: 1.3rem 1.4rem;
+  margin-top: 1rem;
+}
+
+.grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 46rem) {
+  .grid.two {
+    grid-template-columns: 1fr 1fr;
+  }
+  .grid.three {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.entry {
+  animation: enter var(--dur-2) var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 50ms);
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entry {
+    animation: fade var(--dur-1) ease backwards;
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+  }
+}
+
+/* ---- forms ---- */
+
+label.field {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+label.field > .label-text {
+  display: block;
+  margin-bottom: 0.45rem;
+}
+
+textarea,
+input,
+select {
+  width: 100%;
+  font: 450 0.92rem/1.5 var(--font);
+  color: var(--text);
+  background: var(--well);
+  border: 1px solid transparent;
+  border-radius: var(--r-control);
+  padding: 0.65rem 0.85rem;
+  transition: border-color var(--dur-1) ease, box-shadow var(--dur-1) ease;
+}
+
+textarea {
+  font-family: var(--mono);
+  font-size: 0.83rem;
+  resize: vertical;
+  min-height: 6.5rem;
+  word-break: break-all;
+}
+
+textarea:focus,
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+textarea::placeholder,
+input::placeholder {
+  color: var(--text-4);
+}
+
+input[type="number"] {
+  font-family: var(--mono);
+}
+
+select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-3) 50%),
+    linear-gradient(135deg, var(--text-3) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.btn {
+  appearance: none;
+  border: none;
+  background: var(--fill);
+  color: var(--text);
+  font: 550 0.95rem/1 var(--font);
+  padding: 0.75rem 1.35rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 100ms ease-out, background-color var(--dur-1) ease,
+    opacity var(--dur-1) ease, filter var(--dur-1) ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    background: color-mix(in srgb, var(--text) 16%, transparent);
+  }
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  transform: none;
+}
+
+.btn.primary {
+  background: var(--text);
+  color: var(--bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 0.75rem 1.45rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn.primary:hover {
+    background: var(--text);
+    filter: brightness(1.05);
+  }
+}
+
+/* copy is a utility, quieter than the buttons that run a tool */
+.copy-btn {
+  color: var(--text-3);
+  background: var(--well);
+  font-size: 0.8rem;
+  padding: 0.4rem 0.75rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .copy-btn:hover {
+    color: var(--text);
+    background: var(--fill);
+  }
+}
+
+.btn-row {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 1.1rem;
+}
+
+/* ---- results ---- */
+
+.error-line {
+  color: var(--fail);
+  background: var(--fail-bg);
+  border-radius: var(--r-control);
+  padding: 0.7rem 0.95rem;
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+  margin: 1.1rem 0 0;
+}
+
+.verdict {
+  border-radius: var(--r-control);
+  padding: 1.05rem 1.3rem;
+  font-weight: 600;
+  font-size: 1.02rem;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.verdict .mark {
+  flex: none;
+  width: 1.1rem;
+  text-align: center;
+  font-weight: 700;
+}
+
+.verdict.ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.verdict.ok .dot {
+  background: var(--ok);
+}
+
+/* a failed check is the one solid block in a result */
+.verdict.fail {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.verdict.fail .dot {
+  background: var(--bg);
+}
+
+.verdict.warn {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+
+.verdict.warn .dot {
+  background: var(--warn);
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: 9.5rem 1fr;
+  gap: 0.2rem 1.25rem;
+  align-items: baseline;
+}
+
+.kv dt {
+  color: var(--text-3);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.kv dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
+.codeblock {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.65;
+  background: var(--well);
+  border-radius: var(--r-control);
+  padding: 1rem 1.15rem;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.grammar {
+  white-space: pre;
+  overflow-x: auto;
+  overflow-wrap: normal;
+}
+
+.gc {
+  color: var(--text-3);
+}
+
+table.outputs,
+table.matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.93rem;
+}
+
+table.outputs th,
+table.matrix thead th {
+  text-align: left;
+  color: var(--text-3);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.75rem 0.55rem;
+}
+
+table.outputs td,
+table.matrix td,
+table.matrix tbody th {
+  padding: 0.7rem 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+table.outputs td {
+  transition: background-color var(--dur-1) ease;
+}
+
+table.outputs td:first-child {
+  border-radius: var(--r-control) 0 0 var(--r-control);
+}
+
+table.outputs td:last-child {
+  border-radius: 0 var(--r-control) var(--r-control) 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  table.outputs tbody tr:hover td {
+    background: var(--well);
+  }
+}
+
+table.outputs input[type="checkbox"] {
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: var(--accent);
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 650;
+  border-radius: 999px;
+  padding: 0.12rem 0.6rem;
+}
+
+.badge.warn {
+  color: var(--warn);
+  background: var(--warn-bg);
+}
+
+.badge.internal {
+  color: var(--text-2);
+  background: var(--well);
+}
+
+.note {
+  color: var(--text-2);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.warning-line {
+  color: var(--warn);
+  background: var(--warn-bg);
+  border-radius: var(--r-control);
+  padding: 0.7rem 0.95rem;
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+/* ---- home ---- */
+
+.hero {
+  padding: 1.5rem 0 0;
+}
+
+.hero h1 {
+  font-size: clamp(2.6rem, 5.6vw, 4.1rem);
+  line-height: 1.03;
+  letter-spacing: -0.032em;
+  max-width: 21ch;
+}
+
+.hero .lede {
+  font-size: 1.22rem;
+  max-width: 36rem;
+}
+
+.hero .btn-row {
+  margin-top: 1.75rem;
+}
+
+.string-view {
+  margin-top: 1.1rem;
+  font-size: 0.72rem;
+  line-height: 1.75;
+}
+
+.string-view .hrp-part {
+  color: var(--accent);
+  font-weight: 650;
+}
+
+.string-view .rest {
+  color: var(--text-3);
+}
+
+.matrix-scroll {
+  overflow-x: auto;
+  padding: 0.9rem 0.65rem 0.6rem;
+}
+
+table.matrix tbody th {
+  text-align: left;
+  font-weight: 600;
+}
+
+table.matrix td {
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+table.matrix td.yes {
+  color: var(--text);
+  font-weight: 600;
+}
+
+table.matrix td.no {
+  color: var(--text-3);
+}
+
+/* the tools, one card each */
+.tool-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+@media (min-width: 46rem) {
+  .tool-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.tool-list a {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem 1rem;
+  padding: 1.2rem 1.35rem 1.3rem;
+  text-decoration: none;
+  transition: transform 100ms ease-out;
+}
+
+.tool-list .name {
+  font-size: 1.08rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.tool-list .desc {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  color: var(--text-2);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.tool-list .arrow {
+  color: var(--text-4);
+  transition: transform var(--dur-1) var(--ease-out), color var(--dur-1) ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tool-list a:hover .arrow {
+    transform: translateX(3px);
+    color: var(--text);
+  }
+}
+
+.tool-list a:active {
+  transform: scale(0.98);
+}

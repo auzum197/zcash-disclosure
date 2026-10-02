@@ -1,0 +1,29 @@
+[package]
+name = "zdisclosure-core"
+description = "Decoding, verification and report fields shared by the zdisclosure tools, free of process I/O"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+hex.workspace = true
+sapling.workspace = true
+zcash_disclosure.workspace = true
+zcash_keys.workspace = true
+zcash_primitives.workspace = true
+zcash_protocol.workspace = true
+zip32.workspace = true
+
+[dev-dependencies]
+bech32 = "0.11"
+
+# getrandom sits under the crypto stack and refuses wasm32-unknown-unknown unless its
+# browser backend is switched on. Nothing in the core draws randomness at runtime.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.4", features = ["wasm_js"] }

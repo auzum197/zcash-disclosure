@@ -1,0 +1,22 @@
+[package]
+name = "zdisclosure-cli"
+description = "Process plumbing shared by the zdisclosure tools: streams, files, exit codes and the transaction source"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+clap.workspace = true
+lightwallet-core.workspace = true
+tokio.workspace = true
+tonic.workspace = true
+zcash_disclosure.workspace = true
+zcash_primitives.workspace = true
+zcash_protocol.workspace = true
+zdisclosure-core.workspace = true
