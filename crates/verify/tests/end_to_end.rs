@@ -3,32 +3,13 @@
 //! The transactions are Sapling-only and the builder mocks their proofs. No network is
 //! involved, and the lightwalletd path is not covered here.
 
-use std::convert::Infallible;
 use std::fs;
 use std::path::{Path, PathBuf};
 
 use clap::Parser;
-use incrementalmerkletree::frontier::CommitmentTree;
-use incrementalmerkletree::witness::IncrementalWitness;
-use rand_chacha::ChaCha8Rng;
-use rand_core::SeedableRng;
-use sapling::Rseed;
-use transparent::builder::TransparentSigningSet;
 use zcash_disclosure::{Disclosure, Kind};
-use zcash_keys::keys::UnifiedSpendingKey;
-use zcash_primitives::transaction::builder::{BuildConfig, Builder, BundlePadding};
-use zcash_primitives::transaction::fees::zip317;
-use zcash_protocol::consensus::BlockHeight;
-use zcash_protocol::memo::MemoBytes;
-use zcash_protocol::value::Zatoshis;
 use zdisclosure_cli::{Exit, Io};
-use zdisclosure_core::network::default_regtest;
-use zip32::{AccountId, Scope};
-
-const HEIGHT: u32 = 100_000;
-const INPUT: u64 = 10_000_000;
-const INVOICE: u64 = 1_000_000;
-const RENT: u64 = 2_000_000;
+use zdisclosure_fixture::{HEIGHT, INVOICE, RENT};
 
 /// A scratch directory, removed on drop.
 struct Scratch(PathBuf);
@@ -58,7 +39,7 @@ impl Drop for Scratch {
     }
 }
 
-/// A transaction from a sender to a receiver, with the files the tools read.
+/// The sample transaction from `zdisclosure_fixture`, with the files the tools read.
 struct Fixture {
     scratch: Scratch,
     tx: String,
@@ -67,79 +48,13 @@ struct Fixture {
 }
 
 impl Fixture {
-    /// Builds a transaction that spends a Sapling note of the sender and pays the receiver
-    /// in two Sapling outputs. The sender's change goes to its internal Sapling address.
     fn build(name: &str) -> Self {
-        let params = default_regtest();
-        let sender = UnifiedSpendingKey::from_seed(&params, &[1; 32], AccountId::ZERO).unwrap();
-        let receiver = UnifiedSpendingKey::from_seed(&params, &[2; 32], AccountId::ZERO).unwrap();
-        let (sender_fvk, receiver_fvk) = (
-            sender.to_unified_full_viewing_key(),
-            receiver.to_unified_full_viewing_key(),
-        );
-        let s_dfvk = sender_fvk.sapling().unwrap();
-        let to = receiver_fvk.sapling().unwrap().default_address().1;
-
-        let note = s_dfvk.default_address().1.create_note(
-            sapling::value::NoteValue::from_raw(INPUT),
-            Rseed::AfterZip212([7; 32]),
-        );
-        let mut tree = CommitmentTree::<sapling::Node, 32>::empty();
-        tree.append(sapling::Node::from_cmu(&note.cmu())).unwrap();
-        let witness = IncrementalWitness::from_tree(tree).unwrap();
-
-        let builder = |change: u64| {
-            let config = BuildConfig::Standard {
-                sapling_anchor: Some(witness.root().into()),
-                orchard_anchor: None,
-                ironwood_anchor: None,
-                orchard_padding: BundlePadding::DEFAULT,
-                ironwood_padding: BundlePadding::DEFAULT,
-            };
-            let mut b = Builder::new(params, BlockHeight::from_u32(HEIGHT), config);
-            b.add_sapling_spend::<Infallible>(
-                s_dfvk.fvk().clone(),
-                note.clone(),
-                witness.path().unwrap(),
-            )
-            .unwrap();
-            for (value, text) in [(INVOICE, "Invoice #2291"), (RENT, "Rent, October")] {
-                b.add_sapling_output::<Infallible>(
-                    Some(s_dfvk.to_ovk(Scope::External)),
-                    to,
-                    Zatoshis::from_u64(value).unwrap(),
-                    memo(text),
-                )
-                .unwrap();
-            }
-            b.add_sapling_output::<Infallible>(
-                Some(s_dfvk.to_ovk(Scope::Internal)),
-                s_dfvk.change_address().1,
-                Zatoshis::from_u64(change).unwrap(),
-                MemoBytes::empty(),
-            )
-            .unwrap();
-            b
-        };
-
-        #[allow(deprecated)]
-        let fee = u64::from(builder(0).get_fee(&zip317::FeeRule::standard()).unwrap());
-        let built = builder(INPUT - INVOICE - RENT - fee)
-            .mock_build(
-                &TransparentSigningSet::new(),
-                &[sender.sapling().clone()],
-                &[],
-                ChaCha8Rng::seed_from_u64(3),
-            )
-            .unwrap();
-        let mut raw = vec![];
-        built.transaction().write(&mut raw).unwrap();
-
+        let built = zdisclosure_fixture::build();
         let scratch = Scratch::new(name);
         Fixture {
-            tx: scratch.write("tx.hex", &format!("{}\n", hex::encode(raw))),
-            sender: scratch.write("sender.ufvk", &sender_fvk.encode(&params)),
-            receiver: scratch.write("receiver.ufvk", &receiver_fvk.encode(&params)),
+            tx: scratch.write("tx.hex", &format!("{}\n", hex::encode(built.raw))),
+            sender: scratch.write("sender.ufvk", &built.sender_ufvk),
+            receiver: scratch.write("receiver.ufvk", &built.receiver_ufvk),
             scratch,
         }
     }
@@ -156,10 +71,6 @@ impl Fixture {
         .map(str::to_owned)
         .to_vec()
     }
-}
-
-fn memo(text: &str) -> MemoBytes {
-    MemoBytes::from_bytes(text.as_bytes()).unwrap()
 }
 
 struct Run {

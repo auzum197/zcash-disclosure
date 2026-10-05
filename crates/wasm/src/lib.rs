@@ -19,7 +19,7 @@ fn params_for(name: &str) -> Result<network::Params, Error> {
         "main" => Ok(network::Params::Public(consensus::Network::MainNetwork)),
         "test" => Ok(network::Params::Public(consensus::Network::TestNetwork)),
         "regtest" => Ok(network::Params::Regtest(network::default_regtest())),
-        other => Err(Error::new(format!("unknown network {other:?}"))),
+        other => Err(Error::UnknownNetwork(other.to_owned())),
     }
 }
 

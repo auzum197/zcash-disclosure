@@ -66,6 +66,18 @@ impl Error {
             message: message.to_string(),
         }
     }
+
+    fn quiet(exit: Exit) -> Self {
+        Self {
+            exit,
+            message: String::new(),
+        }
+    }
+
+    /// Whether the error ends the run without a report, as a closed output pipe does.
+    pub fn is_quiet(&self) -> bool {
+        self.message.is_empty()
+    }
 }
 
 impl fmt::Display for Error {
@@ -107,16 +119,24 @@ impl Io<'_> {
         let _ = writeln!(self.stderr, "{program}: {message}");
     }
 
-    /// Reports `result` on stderr when it failed, and returns its exit status.
+    /// Reports `result` on stderr when it failed, and returns its exit status. A quiet
+    /// error is reported nowhere.
     pub fn finish(&mut self, program: &str, result: Result<Exit, Error>) -> Exit {
         result.unwrap_or_else(|e| {
-            self.warn(program, &e);
+            if !e.is_quiet() {
+                self.warn(program, &e);
+            }
             e.exit
         })
     }
 }
 
-/// Maps a failed write to stdout to a usage error.
+/// Maps a failed write to stdout to a usage error. A closed output pipe ends the run
+/// quietly with success instead, the way paged output does.
 pub fn write_err(e: std::io::Error) -> Error {
-    Error::usage(format!("cannot write output: {e}"))
+    if e.kind() == std::io::ErrorKind::BrokenPipe {
+        Error::quiet(Exit::Ok)
+    } else {
+        Error::usage(format!("cannot write output: {e}"))
+    }
 }

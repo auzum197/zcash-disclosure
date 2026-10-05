@@ -7,8 +7,7 @@ use crate::Error;
 
 /// Decodes one Disclosure string and enforces the whole canonical form.
 pub fn decode(s: &str) -> Result<Disclosure, Error> {
-    let disclosure =
-        Disclosure::decode(s).map_err(|e| Error::new(format!("invalid disclosure: {e}")))?;
+    let disclosure = Disclosure::decode(s).map_err(|e| Error::InvalidDisclosure(e.to_string()))?;
     covered(&disclosure)?;
     Ok(disclosure)
 }
@@ -17,17 +16,14 @@ pub fn decode(s: &str) -> Result<Disclosure, Error> {
 /// Sapling pool, and unknown Items out of order.
 pub fn covered(disclosure: &Disclosure) -> Result<(), Error> {
     if disclosure.class() == Class::Signed {
-        return Err(Error::new("unsupported disclosure: the signed class"));
+        return Err(Error::SignedClass);
     }
     if let Some(item) = disclosure
         .items()
         .iter()
         .find(|item| item.kind.pool() != Pool::Sapling)
     {
-        return Err(Error::new(format!(
-            "unsupported disclosure: typecode {:#04x} is not a Sapling item",
-            item.kind.typecode()
-        )));
+        return Err(Error::ForeignPool(item.kind.typecode()));
     }
     sorted(disclosure)
 }
@@ -42,9 +38,7 @@ fn sorted(disclosure: &Disclosure) -> Result<(), Error> {
     {
         Ok(())
     } else {
-        Err(Error::new(
-            "invalid disclosure: items are not sorted by (typecode, index)",
-        ))
+        Err(Error::UnsortedItems)
     }
 }
 
@@ -52,11 +46,10 @@ fn sorted(disclosure: &Disclosure) -> Result<(), Error> {
 pub fn parse_text(text: &str) -> Result<Vec<Disclosure>, Error> {
     let mut lines = text.lines().filter(|l| !l.trim().is_empty());
     match (lines.next(), lines.next()) {
-        (None, _) => Err(Error::new("no disclosure in the input")),
+        (None, _) => Err(Error::EmptyInput),
         (Some(line), None) => decode(line).map(|d| vec![d]),
         _ => {
-            let parsed =
-                set::parse(text).map_err(|e| Error::new(format!("invalid disclosure set: {e}")))?;
+            let parsed = set::parse(text).map_err(|e| Error::InvalidSet(e.to_string()))?;
             parsed.iter().try_for_each(covered)?;
             Ok(parsed)
         }

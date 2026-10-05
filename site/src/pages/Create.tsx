@@ -48,7 +48,7 @@ export default function Create() {
 		}
 		setBusy(true);
 		await load();
-		const r = createDisclosure(
+		const r = await createDisclosure(
 			ufvk().trim(),
 			tx().trim(),
 			h,
@@ -78,7 +78,7 @@ export default function Create() {
 		}
 		setBusy(true);
 		await load();
-		const r = createDisclosure(
+		const r = await createDisclosure(
 			ufvk().trim(),
 			tx().trim(),
 			h,

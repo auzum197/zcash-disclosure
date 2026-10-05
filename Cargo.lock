@@ -2894,10 +2894,26 @@ dependencies = [
  "clap",
  "qrcode",
  "zcash_disclosure",
- "zcash_keys",
  "zcash_protocol",
  "zdisclosure-cli",
  "zdisclosure-core",
+]
+
+[[package]]
+name = "zdisclosure-fixture"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "incrementalmerkletree",
+ "rand_chacha 0.10.0",
+ "rand_core 0.10.1",
+ "sapling-crypto",
+ "zcash_keys",
+ "zcash_primitives",
+ "zcash_protocol",
+ "zcash_transparent",
+ "zdisclosure-core",
+ "zip32",
 ]
 
 [[package]]
@@ -2917,21 +2933,16 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "hex",
- "incrementalmerkletree",
- "rand_chacha 0.10.0",
- "rand_core 0.10.1",
- "sapling-crypto",
  "serde_json",
  "zcash_disclosure",
  "zcash_keys",
  "zcash_primitives",
  "zcash_protocol",
- "zcash_transparent",
  "zdisclosure-cli",
  "zdisclosure-core",
  "zdisclosure-create",
+ "zdisclosure-fixture",
  "zdisclosure-inspect",
- "zip32",
 ]
 
 [[package]]

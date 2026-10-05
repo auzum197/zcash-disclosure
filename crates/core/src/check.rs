@@ -15,6 +15,8 @@ pub fn check(
     tx: &Transaction,
     disclosure: &Disclosure,
 ) -> Result<Report, Error> {
-    verify(params, height, tx, disclosure, None)
-        .map_err(|e| Error::new(format!("{}: {e}", disclosure.txid())))
+    verify(params, height, tx, disclosure, None).map_err(|e| Error::VerificationFailed {
+        txid: disclosure.txid(),
+        source: e.to_string(),
+    })
 }

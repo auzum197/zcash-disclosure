@@ -39,7 +39,7 @@ export default function Inspect() {
 		}
 		setBusy(true);
 		await load();
-		const r = decodeDisclosure(source);
+		const r = await decodeDisclosure(source);
 		setBusy(false);
 		if (typeof r === "string") {
 			setError(r);
@@ -64,7 +64,12 @@ export default function Inspect() {
 		}
 		setBusy(true);
 		await load();
-		const r = verifyDisclosure(tx().trim(), h, network(), text().trim());
+		const r = await verifyDisclosure(
+			tx().trim(),
+			h,
+			network(),
+			text().trim(),
+		);
 		setBusy(false);
 		if (typeof r === "string") {
 			setCheckError(r);

@@ -44,7 +44,12 @@ export default function Verify() {
 		}
 		setBusy(true);
 		await load();
-		const r = verifyDisclosure(tx().trim(), h, network(), disclosure().trim());
+		const r = await verifyDisclosure(
+			tx().trim(),
+			h,
+			network(),
+			disclosure().trim(),
+		);
 		setBusy(false);
 		if (typeof r === "string") {
 			setError(r);

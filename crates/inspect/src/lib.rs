@@ -48,7 +48,7 @@ pub fn run(cli: Cli, io: &mut Io<'_>) -> Exit {
     match inspect(&cli, io) {
         Ok(exit) => exit,
         Err(e) => {
-            if !cli.quiet {
+            if !cli.quiet && !e.is_quiet() {
                 io.warn(PROGRAM, &e);
             }
             e.exit
@@ -73,7 +73,7 @@ fn inspect(cli: &Cli, io: &mut Io<'_>) -> Result<Exit, Error> {
                 Ok(checked) => Some(checked),
                 Err(e) if e.exit == Exit::Usage => return Err(e),
                 Err(e) => {
-                    if !cli.quiet {
+                    if !cli.quiet && !e.is_quiet() {
                         io.warn(PROGRAM, &e);
                     }
                     exit = worst(exit, e.exit);

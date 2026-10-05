@@ -8,9 +8,7 @@ use clap::Parser;
 use qrcode::QrCode;
 use qrcode::render::unicode::Dense1x2;
 use zcash_disclosure::{Disclosable, Disclosure, set};
-use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_protocol::TxId;
-use zcash_protocol::consensus::Parameters;
 use zdisclosure_cli::network::NetworkArgs;
 use zdisclosure_cli::source::{Source, TxArgs};
 use zdisclosure_cli::{Error, Exit, Io, input, write_err};
@@ -88,13 +86,7 @@ fn create(cli: &Cli, io: &mut Io<'_>) -> Result<Exit, Error> {
 
     let ufvk_text = String::from_utf8(input::read_bytes(&cli.ufvk_file, io.stdin)?)
         .map_err(|_| Error::usage("the UFVK file is not UTF-8 text"))?;
-    // The decoder's message is left out, so that no part of the key reaches stderr.
-    let ufvk = UnifiedFullViewingKey::decode(&params, ufvk_text.trim()).map_err(|_| {
-        Error::usage(format!(
-            "the UFVK file does not hold a unified full viewing key for {:?}",
-            params.network_type()
-        ))
-    })?;
+    let ufvk = produce::decode_ufvk(&params, &ufvk_text).map_err(Error::usage)?;
 
     let source = Source::open(&cli.tx, io.stdin)?
         .ok_or_else(|| Error::usage("give --tx and --height, or --lightwalletd and --txid"))?;

@@ -157,32 +157,10 @@ impl Lightwalletd {
     }
 
     fn fetch(&self, params: &Params, txid: TxId) -> Result<Fetched, Error> {
-        let unavailable = |e: lightwallet_core::Error| Error::unavailable(format!("{txid}: {e}"));
-        let (raw, tip) = match self.rt.block_on(tokio::time::timeout(RPC_TIMEOUT, async {
-            // The txid request and the tip request go over separate connections, as
-            // lightwallet-core asks of identity-bearing calls.
-            let identity = CanonicalIdentityClient::new(IdentityTransport::connect_lazy(
-                self.endpoint.clone(),
-            ));
-            let raw = identity
-                .get_transaction(Txid::new(txid.as_ref().to_vec()))
-                .await
-                .map_err(unavailable)?;
-            let indexer = CanonicalIndexerClient::new(
-                self.endpoint.connect_lazy(),
-                NetworkParams {
-                    chain_name: String::new(),
-                    activation_heights: BTreeMap::new(),
-                    consensus_branch_id: 0,
-                },
-            );
-            let tip = indexer
-                .get_latest_block()
-                .await
-                .map_err(unavailable)?
-                .height;
-            Ok::<_, Error>((raw, tip))
-        })) {
+        let (data, reported, tip) = match self
+            .rt
+            .block_on(tokio::time::timeout(RPC_TIMEOUT, self.raw_and_tip(txid)))
+        {
             Ok(inside) => inside?,
             Err(_) => {
                 return Err(Error::unavailable(format!(
@@ -190,37 +168,70 @@ impl Lightwalletd {
                 )));
             }
         };
-
-        // The height and the tip come from the same server over two connections. Reject
-        // pairs that cannot describe one chain.
-        let next = tip
-            .checked_add(1)
-            .ok_or_else(|| Error::unavailable(format!("{txid}: the server reports tip {tip}")))?;
-        let (height, depth) = match raw.height {
-            0 => (next, 0),
-            u64::MAX => {
-                return Err(Error::unavailable(format!(
-                    "{txid} is mined only on a fork outside the main chain"
-                )));
-            }
-            h if h > tip => {
-                return Err(Error::unavailable(format!(
-                    "{txid}: the server reports height {h} above its tip {tip}"
-                )));
-            }
-            h => (h, next - h),
-        };
-        let height = u32::try_from(height)
-            .map(BlockHeight::from_u32)
-            .map_err(|_| Error::unavailable(format!("{txid}: height {height} is out of range")))?;
-        let parsed = tx::parse(params, &raw.data, height)
+        let (height, depth) = place(txid, reported, tip)?;
+        let tx = tx::parse(params, &data, height)
             .map_err(|e| Error::unavailable(format!("{txid}: {e}")))?;
         Ok(Fetched {
-            tx: parsed,
+            tx,
             height,
             depth: Some(depth),
         })
     }
+
+    /// Asks the server for the raw transaction and the height of its tip, as
+    /// `(data, reported height, tip)`. The two requests go over separate connections, as
+    /// lightwallet-core asks of identity-bearing calls.
+    async fn raw_and_tip(&self, txid: TxId) -> Result<(Vec<u8>, u64, u64), Error> {
+        let unavailable = |e: lightwallet_core::Error| Error::unavailable(format!("{txid}: {e}"));
+        let identity =
+            CanonicalIdentityClient::new(IdentityTransport::connect_lazy(self.endpoint.clone()));
+        let raw = identity
+            .get_transaction(Txid::new(txid.as_ref().to_vec()))
+            .await
+            .map_err(unavailable)?;
+        let indexer = CanonicalIndexerClient::new(
+            self.endpoint.connect_lazy(),
+            NetworkParams {
+                chain_name: String::new(),
+                activation_heights: BTreeMap::new(),
+                consensus_branch_id: 0,
+            },
+        );
+        let tip = indexer
+            .get_latest_block()
+            .await
+            .map_err(unavailable)?
+            .height;
+        Ok((raw.data, raw.height, tip))
+    }
+}
+
+/// Where a transaction the server reported at `reported` sits in the chain it reported
+/// with `tip`, as `(height, depth)`. Height 0 is the mempool, and depth counts both
+/// ends. The two numbers come from the same server over two connections, so pairs that
+/// cannot describe one chain are rejected.
+fn place(txid: TxId, reported: u64, tip: u64) -> Result<(BlockHeight, u64), Error> {
+    let next = tip
+        .checked_add(1)
+        .ok_or_else(|| Error::unavailable(format!("{txid}: the server reports tip {tip}")))?;
+    let (height, depth) = match reported {
+        0 => (next, 0),
+        u64::MAX => {
+            return Err(Error::unavailable(format!(
+                "{txid} is mined only on a fork outside the main chain"
+            )));
+        }
+        h if h > tip => {
+            return Err(Error::unavailable(format!(
+                "{txid}: the server reports height {h} above its tip {tip}"
+            )));
+        }
+        h => (h, next - h),
+    };
+    let height = u32::try_from(height)
+        .map(BlockHeight::from_u32)
+        .map_err(|_| Error::unavailable(format!("{txid}: height {height} is out of range")))?;
+    Ok((height, depth))
 }
 
 #[cfg(test)]
