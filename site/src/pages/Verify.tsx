@@ -11,7 +11,6 @@ import { Field } from "../components/ui";
 
 const fixture = sample as Sample;
 
-// Module scope: the tab switcher unmounts pages, and the work on them survives.
 const [disclosure, setDisclosure] = createSignal("");
 const [tx, setTx] = createSignal("");
 const [height, setHeight] = createSignal("");

@@ -149,7 +149,6 @@ mod tests {
             assert!(parse_text(&text).is_err());
         }
 
-        // A spend signer Item: index, cv, rk, a 192-byte proof and a 64-byte signature.
         let mut signer = vec![0xe0, 0xfd, 0x41, 0x01];
         signer.extend_from_slice(&[0; 321]);
         let signed = encode("zdstest", &signer);

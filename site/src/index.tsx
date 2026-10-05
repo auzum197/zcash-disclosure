@@ -12,8 +12,6 @@ function App(props: RouteSectionProps) {
   let nav: HTMLElement | undefined;
   let thumb: HTMLElement | undefined;
 
-  // The thumb is absolute and the segments are equal width, so moving it
-  // never reflows the bar or the page.
   const place = () => {
     const active = nav?.querySelector<HTMLAnchorElement>("a.active");
     if (!active || !thumb) return;

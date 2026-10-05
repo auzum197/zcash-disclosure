@@ -191,8 +191,6 @@ fn merge_into(path: &Path, disclosure: Disclosure) -> Result<(), Error> {
     }
     let text = set::format(&lines).map_err(|e| Error::usage(format!("{shown}: {e}")))?;
 
-    // The temp file is created in place, so a name planted beforehand fails the run instead
-    // of being written through. It holds payment secrets and starts owner-only.
     let dir = path.parent().unwrap_or(Path::new("."));
     let name = path
         .file_name()
@@ -228,7 +226,6 @@ fn merge_into(path: &Path, disclosure: Disclosure) -> Result<(), Error> {
     }
     drop(file);
 
-    // A set we merge into keeps the mode the user gave it.
     let keep = match fs::symlink_metadata(path) {
         Ok(meta) => fs::set_permissions(&tmp, meta.permissions()),
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),

@@ -14,7 +14,6 @@ import { CopyButton, Field } from "../components/ui";
 
 const fixture = sample as Sample;
 
-// Module scope: the tab switcher unmounts pages, and the work on them survives.
 const [text, setText] = createSignal("");
 const [report, setReport] = createSignal<DecodeReport | null>(null);
 const [error, setError] = createSignal("");

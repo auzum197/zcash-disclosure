@@ -115,7 +115,6 @@ impl Io<'_> {
 
     /// Writes `message` to stderr, prefixed with the program name.
     pub fn warn(&mut self, program: &str, message: impl fmt::Display) {
-        // A closed stderr leaves nowhere to report to.
         let _ = writeln!(self.stderr, "{program}: {message}");
     }
 
