@@ -1,11 +1,15 @@
 import { createSignal, For, Show } from "solid-js";
+import sample from "../data/sample.json";
 import {
 	load,
 	verifyDisclosure,
+	type Sample,
 	type VerifyReport,
 } from "../lib/wasm";
 import { NETWORKS, parseHeight, zec } from "../lib/format";
 import { Field } from "../components/ui";
+
+const fixture = sample as Sample;
 
 const [disclosure, setDisclosure] = createSignal("");
 const [tx, setTx] = createSignal("");
@@ -16,6 +20,15 @@ const [error, setError] = createSignal("");
 const [busy, setBusy] = createSignal(false);
 
 export default function Verify() {
+	function loadExample() {
+		setDisclosure(fixture.disclosure);
+		setTx(fixture.tx);
+		setHeight(String(fixture.height));
+		setNetwork(fixture.network);
+		setError("");
+		setReport(null);
+	}
+
 	async function run() {
 		setError("");
 		setReport(null);
@@ -109,6 +122,9 @@ export default function Verify() {
 							onClick={() => void run()}
 						>
 							Verify
+						</button>
+						<button class="btn" onClick={loadExample}>
+							Load example
 						</button>
 					</div>
 					<Show when={error()}>

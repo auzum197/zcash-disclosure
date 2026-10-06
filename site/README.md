@@ -61,3 +61,12 @@ pnpm check:contrast
 The script parses both theme blocks in `src/styles.css`, composites the
 tinted surfaces, and fails on any pair under its level. Change colors there
 and re-run it.
+
+## Regenerate the sample fixture
+
+The example on every page is a real regtest transaction with fixed seeds, so
+it is reproducible:
+
+```sh
+cargo run -p zdisclosure-verify --example make_fixture > src/data/sample.json
+```

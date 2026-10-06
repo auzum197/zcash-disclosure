@@ -765,6 +765,21 @@ table.outputs input[type="checkbox"] {
   margin-top: 1.75rem;
 }
 
+.string-view {
+  margin-top: 1.1rem;
+  font-size: 0.72rem;
+  line-height: 1.75;
+}
+
+.string-view .hrp-part {
+  color: var(--accent);
+  font-weight: 650;
+}
+
+.string-view .rest {
+  color: var(--text-3);
+}
+
 .matrix-scroll {
   overflow-x: auto;
   padding: 0.9rem 0.65rem 0.6rem;
