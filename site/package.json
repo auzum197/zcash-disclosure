@@ -8,13 +8,16 @@
     "build": "vite build",
     "preview": "vite preview",
     "wasm": "sh build-wasm.sh",
-    "check:contrast": "node scripts/apca.mjs"
+    "check:contrast": "node scripts/apca.mjs",
+    "og": "node scripts/og.mjs",
+    "og:preview": "vite --open /og-preview.html"
   },
   "dependencies": {
     "@solidjs/router": "^0.15.3",
     "solid-js": "^1.9.7"
   },
   "devDependencies": {
+    "playwright-core": "1.63.0",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
     "vite-plugin-solid": "^2.11.6"

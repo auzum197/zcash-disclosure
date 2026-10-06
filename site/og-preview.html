@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Link previews · zcash-disclosure</title>
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <!-- a local check of the link previews, not part of the build. Run
+         pnpm og:preview. It reads each route's head the way a crawler does,
+         checks the tags, and lays the cards out as the main platforms do.
+         Images load from this server instead of the public origin. -->
+    <style>
+      @font-face {
+        font-family: "Geist";
+        src: url("/fonts/Geist-Variable.woff2") format("woff2");
+        font-weight: 100 900;
+      }
+      @font-face {
+        font-family: "Geist Mono";
+        src: url("/fonts/GeistMono-Variable.woff2") format("woff2");
+        font-weight: 100 900;
+      }
+
+      :root {
+        color-scheme: dark;
+        --bg: #0a0a0c;
+        --text: #f5f4f0;
+        --text-2: #e4e3de;
+        --text-3: #d8d7d2;
+        --text-4: #a09f9a;
+        --well: rgba(255, 255, 255, 0.06);
+        --card: rgba(255, 255, 255, 0.045);
+        --line: rgba(255, 255, 255, 0.1);
+        --mono: "Geist Mono", ui-monospace, monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-padding-top: 4.5rem;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 400 15px/1.5 "Geist", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .label {
+        font: 560 0.72rem/1.3 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-4);
+      }
+
+      /* the bar: title, totals, and a link to each section */
+      .top {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: rgba(10, 10, 12, 0.82);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .top div,
+      main {
+        max-width: 78rem;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+      }
+
+      .top div {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        height: 3.5rem;
+      }
+
+      .top h1 {
+        margin: 0;
+        font-size: 1rem;
+        letter-spacing: -0.01em;
+      }
+
+      .top nav {
+        display: flex;
+        gap: 1.1rem;
+        margin-left: auto;
+      }
+
+      .top nav a {
+        text-decoration: none;
+      }
+
+      .top nav a:hover {
+        color: var(--text);
+      }
+
+      .total {
+        padding: 0.25rem 0.6rem;
+        border-radius: 999px;
+        background: var(--well);
+        font: 500 0.78rem/1 var(--mono);
+      }
+
+      .total.bad {
+        background: var(--text);
+        color: var(--bg);
+      }
+
+      section {
+        padding: 3rem 0 0;
+      }
+
+      h2 {
+        margin: 0 0 0.3rem;
+        font-size: 1.3rem;
+        letter-spacing: -0.02em;
+      }
+
+      /* images: the four cards side by side */
+      .images {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+      }
+
+      .images figure {
+        margin: 0;
+      }
+
+      .images figcaption {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+      }
+
+      .images img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1200 / 630;
+        border-radius: 12px;
+        box-shadow: 0 0 0 1px var(--line);
+      }
+
+      /* checks: one row per check, one column per route */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font: 400 0.82rem/1.4 var(--mono);
+      }
+
+      th,
+      td {
+        text-align: left;
+        vertical-align: top;
+        padding: 0.45rem 0.75rem;
+      }
+
+      .checks thead th {
+        position: sticky;
+        top: 3.5rem;
+        background: var(--bg);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .checks tbody th {
+        font-weight: 400;
+        color: var(--text-2);
+        width: 18rem;
+      }
+
+      .checks tr.group th {
+        padding-top: 1.2rem;
+      }
+
+      .checks td {
+        white-space: nowrap;
+      }
+
+      .ok::before {
+        content: "✓ ";
+      }
+
+      td .ok {
+        display: inline-block;
+        width: 1.4rem;
+      }
+
+      .no {
+        background: var(--text);
+        color: var(--bg);
+        border-radius: 4px;
+        padding: 0 0.3rem;
+      }
+
+      .no::before {
+        content: "✕ ";
+      }
+
+      .value {
+        color: var(--text-4);
+      }
+
+      /* platforms: one route at a time, every platform for it */
+      .switch {
+        display: inline-flex;
+        gap: 2px;
+        padding: 3px;
+        margin-bottom: 1.5rem;
+        border-radius: 999px;
+        background: var(--well);
+      }
+
+      .switch button {
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        padding: 0.35rem 0.95rem;
+        background: none;
+        color: var(--text-3);
+        font: 560 0.88rem/1.2 "Geist", sans-serif;
+        cursor: pointer;
+      }
+
+      .switch button[aria-pressed="true"] {
+        background: rgba(255, 255, 255, 0.16);
+        color: var(--text);
+      }
+
+      .platforms {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
+        gap: 2rem 1.5rem;
+        align-items: start;
+      }
+
+      .platforms figure {
+        margin: 0;
+      }
+
+      .platforms figcaption {
+        margin-bottom: 0.6rem;
+      }
+
+      .platforms img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1200 / 630;
+        object-fit: cover;
+      }
+
+      .clamp {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+      }
+
+      .x {
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+      }
+
+      .x span {
+        position: absolute;
+        left: 12px;
+        bottom: 12px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.77);
+        font-size: 13px;
+      }
+
+      .unfurl {
+        border-left: 4px solid var(--line);
+        padding: 0.2rem 0 0.2rem 0.8rem;
+      }
+
+      .unfurl.discord {
+        border-radius: 4px;
+        background: var(--card);
+        padding: 0.8rem 1rem 1rem;
+      }
+
+      .unfurl .site {
+        font-size: 12px;
+        color: var(--text-4);
+      }
+
+      .unfurl .title {
+        margin: 0.15rem 0;
+        font-weight: 650;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+
+      .unfurl .desc {
+        margin: 0 0 0.6rem;
+        color: var(--text-3);
+        font-size: 14px;
+      }
+
+      .unfurl img {
+        border-radius: 6px;
+      }
+
+      .stacked {
+        border-radius: 10px;
+        overflow: hidden;
+        background: var(--card);
+        border: 1px solid var(--line);
+      }
+
+      .stacked div {
+        padding: 0.7rem 0.9rem 0.8rem;
+      }
+
+      .stacked .domain {
+        font-size: 12px;
+        color: var(--text-4);
+      }
+
+      .stacked.imessage {
+        border-radius: 18px;
+      }
+
+      .stacked b {
+        display: block;
+        font-weight: 650;
+      }
+
+      /* tags: one folded table per route */
+      details {
+        border-top: 1px solid var(--line);
+      }
+
+      details:last-child {
+        border-bottom: 1px solid var(--line);
+      }
+
+      summary {
+        display: flex;
+        gap: 1rem;
+        align-items: baseline;
+        padding: 0.8rem 0;
+        cursor: pointer;
+      }
+
+      summary b {
+        font-weight: 600;
+      }
+
+      .tags th {
+        width: 15rem;
+        color: var(--text-3);
+        font-weight: 500;
+      }
+
+      .tags td {
+        overflow-wrap: anywhere;
+      }
+
+      .tags tr + tr > * {
+        border-top: 1px solid var(--line);
+      }
+
+      footer {
+        height: 4rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <div>
+        <h1>Link previews</h1>
+        <span class="total" id="total">Checking…</span>
+        <nav>
+          <a class="label" href="#images">Images</a>
+          <a class="label" href="#checks">Checks</a>
+          <a class="label" href="#platforms">Platforms</a>
+          <a class="label" href="#tags">Tags</a>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <section id="images">
+        <h2>Images</h2>
+        <div class="images" id="image-grid"></div>
+      </section>
+
+      <section id="checks">
+        <h2>Checks</h2>
+        <table class="checks" id="check-table"></table>
+      </section>
+
+      <section id="platforms">
+        <h2>Platforms</h2>
+        <div class="switch" id="switch" role="group" aria-label="Route"></div>
+        <div class="platforms" id="platform-grid"></div>
+      </section>
+
+      <section id="tags">
+        <h2>Tags</h2>
+        <div id="tag-list"></div>
+      </section>
+      <footer></footer>
+    </main>
+    <script type="module">
+      import { ROUTES } from "/src/meta.ts";
+
+      const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+      const local = (url) => (url ? `${location.origin}${new URL(url).pathname}` : "");
+      const size = (src) =>
+        new Promise((done) => {
+          const img = new Image();
+          img.onload = () => done([img.naturalWidth, img.naturalHeight]);
+          img.onerror = () => done(null);
+          img.src = src;
+        });
+
+      // [group, label, test]. A test returns [passed, value to show].
+      const set = (k) => (r) => [Boolean(r.tags[k]), ""];
+      const CHECKS = [
+        ["Page", "<title>", (r) => [Boolean(r.tags["<title>"]), r.tags["<title>"]?.length + " chars"]],
+        ["Page", "description", (r) => [(r.tags.description ?? "").length > 0 && r.tags.description.length <= 160, (r.tags.description ?? "").length + " / 160"]],
+        ["Page", "canonical is the og:url", (r) => [r.tags.canonical === r.tags["og:url"], ""]],
+        ["Open Graph", "og:title", (r) => [(r.tags["og:title"] ?? "").length > 0 && r.tags["og:title"].length <= 70, (r.tags["og:title"] ?? "").length + " / 70"]],
+        ["Open Graph", "og:description", (r) => [(r.tags["og:description"] ?? "").length > 0 && r.tags["og:description"].length <= 200, (r.tags["og:description"] ?? "").length + " / 200"]],
+        ["Open Graph", "og:url", set("og:url")],
+        ["Open Graph", "og:type", set("og:type")],
+        ["Open Graph", "og:site_name", set("og:site_name")],
+        ["Image", "og:image is absolute https", (r) => [/^https:\/\//.test(r.tags["og:image"] ?? ""), ""]],
+        ["Image", "image loads", (r) => [r.dims !== null, ""]],
+        ["Image", "image is 1200×630", (r) => [r.dims?.[0] === 1200 && r.dims?.[1] === 630, r.dims ? r.dims.join("×") : "none"]],
+        ["Image", "width and height tags match", (r) => [r.dims !== null && +r.tags["og:image:width"] === r.dims[0] && +r.tags["og:image:height"] === r.dims[1], ""]],
+        ["Image", "og:image:alt", set("og:image:alt")],
+        ["X", "twitter:card is summary_large_image", (r) => [r.tags["twitter:card"] === "summary_large_image", ""]],
+        ["X", "twitter:title", set("twitter:title")],
+        ["X", "twitter:description", set("twitter:description")],
+        ["X", "twitter:image is og:image", (r) => [Boolean(r.tags["twitter:image"]) && r.tags["twitter:image"] === r.tags["og:image"], ""]],
+        ["X", "twitter:image:alt", set("twitter:image:alt")],
+      ];
+
+      async function read(m) {
+        const html = await fetch(m.path, { headers: { accept: "text/html" } }).then((r) => r.text());
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const tags = {};
+        for (const el of doc.querySelectorAll("meta[property], meta[name]")) {
+          tags[el.getAttribute("property") ?? el.getAttribute("name")] = el.getAttribute("content");
+        }
+        tags["<title>"] = doc.title;
+        tags.canonical = doc.querySelector('link[rel="canonical"]')?.getAttribute("href") ?? "";
+        const image = local(tags["og:image"]);
+        const r = { m, tags, image, host: tags["og:url"] ? new URL(tags["og:url"]).host : "", dims: image ? await size(image) : null };
+        r.results = CHECKS.map(([, , test]) => test(r));
+        r.passed = r.results.every(([ok]) => ok);
+        return r;
+      }
+
+      const routes = await Promise.all(ROUTES.map(read));
+      const failed = routes.reduce((n, r) => n + r.results.filter(([ok]) => !ok).length, 0);
+      const all = routes.length * CHECKS.length;
+      const total = document.getElementById("total");
+      total.textContent = failed ? `${failed} of ${all} checks fail` : `${all} of ${all} checks pass`;
+      total.classList.toggle("bad", failed > 0);
+
+      const verdict = (ok, word = true) => `<span class="${ok ? "ok" : "no"}">${word ? (ok ? "pass" : "fail") : ""}</span>`;
+
+      document.getElementById("image-grid").innerHTML = routes
+        .map(
+          (r) => `
+          <figure>
+            <figcaption><span class="label">${esc(r.m.path)} · ${esc(r.m.headline)}</span><span class="label">${verdict(r.passed)}</span></figcaption>
+            <img src="${r.image}" alt="${esc(r.tags["og:image:alt"])}" />
+          </figure>`,
+        )
+        .join("");
+
+      let group = "";
+      document.getElementById("check-table").innerHTML = `
+        <thead><tr><th class="label">Check</th>${routes.map((r) => `<th class="label">${esc(r.m.path)}</th>`).join("")}</tr></thead>
+        <tbody>${CHECKS.map(([g, label], i) => {
+          const head = g === group ? "" : `<tr class="group"><th class="label" colspan="${routes.length + 1}">${esc(g)}</th></tr>`;
+          group = g;
+          return `${head}<tr><th>${esc(label)}</th>${routes
+            .map((r) => {
+              const [ok, value] = r.results[i];
+              return `<td>${verdict(ok, !ok)}${value ? ` <span class="value">${esc(value)}</span>` : ""}</td>`;
+            })
+            .join("")}</tr>`;
+        }).join("")}</tbody>`;
+
+      const platforms = (r) => {
+        const t = (k) => esc(r.tags[k]);
+        return `
+          <figure>
+            <figcaption class="label">X</figcaption>
+            <div class="x"><img src="${r.image}" alt="" /><span>${esc(r.host)}</span></div>
+          </figure>
+          <figure>
+            <figcaption class="label">Slack</figcaption>
+            <div class="unfurl">
+              <div class="site"><b>${t("og:site_name")}</b></div>
+              <p class="title">${t("og:title")}</p>
+              <p class="desc">${t("og:description")}</p>
+              <img src="${r.image}" alt="" />
+            </div>
+          </figure>
+          <figure>
+            <figcaption class="label">Discord</figcaption>
+            <div class="unfurl discord">
+              <div class="site">${t("og:site_name")}</div>
+              <p class="title">${t("og:title")}</p>
+              <p class="desc">${t("og:description")}</p>
+              <img src="${r.image}" alt="" />
+            </div>
+          </figure>
+          <figure>
+            <figcaption class="label">LinkedIn and Facebook</figcaption>
+            <div class="stacked">
+              <img src="${r.image}" alt="" />
+              <div><span class="domain">${esc(r.host.toUpperCase())}</span><b class="clamp">${t("og:title")}</b></div>
+            </div>
+          </figure>
+          <figure>
+            <figcaption class="label">iMessage</figcaption>
+            <div class="stacked imessage">
+              <img src="${r.image}" alt="" />
+              <div><b class="clamp">${t("og:title")}</b><span class="domain">${esc(r.host)}</span></div>
+            </div>
+          </figure>`;
+      };
+
+      const switcher = document.getElementById("switch");
+      const grid = document.getElementById("platform-grid");
+      const show = (i) => {
+        grid.innerHTML = platforms(routes[i]);
+        for (const [j, b] of [...switcher.children].entries()) b.setAttribute("aria-pressed", String(i === j));
+      };
+      switcher.innerHTML = routes.map((r) => `<button type="button">${esc(r.m.path)}</button>`).join("");
+      [...switcher.children].forEach((b, i) => b.addEventListener("click", () => show(i)));
+      show(0);
+
+      document.getElementById("tag-list").innerHTML = routes
+        .map(
+          (r) => `
+          <details>
+            <summary><b>${esc(r.m.path)}</b><span class="label">${Object.keys(r.tags).length} tags · ${verdict(r.passed)}</span></summary>
+            <table class="tags">${Object.entries(r.tags)
+              .map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`)
+              .join("")}</table>
+          </details>`,
+        )
+        .join("");
+    </script>
+  </body>
+</html>

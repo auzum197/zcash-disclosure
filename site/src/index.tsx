@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Inspect from "./pages/Inspect";
 import Verify from "./pages/Verify";
 import Create from "./pages/Create";
+import { metaFor } from "./meta";
 
 function App(props: RouteSectionProps) {
   const location = useLocation();
@@ -27,7 +28,7 @@ function App(props: RouteSectionProps) {
   });
 
   createEffect(() => {
-    void location.pathname;
+    document.title = metaFor(location.pathname).title;
     place();
   });
 
@@ -37,7 +38,7 @@ function App(props: RouteSectionProps) {
         <div class="top-inner">
           <A href="/" class="wordmark" draggable={false}>
             <img src="/icon.svg" width="22" height="22" alt="" />
-            zdisc
+            <span class="wordmark-text">zcash-disclosure</span>
           </A>
           <nav class="segmented" ref={(el) => (nav = el)}>
             <span class="segmented-thumb" ref={(el) => (thumb = el)} aria-hidden="true" />

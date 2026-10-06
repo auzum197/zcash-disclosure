@@ -1,32 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <title>zdisc</title>
+  <title>zcash-disclosure</title>
   <style>
     .tile { fill: #201f1b; }
-    .edge { fill: none; stroke: #f6f5f1; stroke-width: 0.5; opacity: 0.3; }
-    text { fill: #f6f5f1; font: 700 2.4px ui-monospace, Menlo, monospace; dominant-baseline: central; }
+    .lines { fill: none; stroke: #f6f5f1; stroke-width: 2.25; stroke-linecap: round; }
     @media (prefers-color-scheme: dark) {
       .tile { fill: #f5f4f0; }
-      .edge { stroke: #0a0a0c; }
-      text { fill: #0a0a0c; }
+      .lines { stroke: #0a0a0c; }
     }
   </style>
   <rect class="tile" width="64" height="64" rx="14"/>
-  <g class="edge">
-    <path id="rim" d="M32 11A21 21 0 1 1 31.99 11"/>
-    <path id="equator" d="M11 32H53"/>
-    <path id="north" d="M13.8 21.5H50.2"/>
-    <path id="south" d="M13.8 42.5H50.2"/>
-    <path id="prime" d="M32 11V53"/>
-    <path id="east" d="M32 11A10.5 21 0 0 1 32 53"/>
-    <path id="west" d="M32 11A10.5 21 0 0 0 32 53"/>
+  <g class="lines">
+    <circle cx="32" cy="32" r="21"/>
+    <ellipse cx="32" cy="32" rx="14.85" ry="21"/>
+    <path d="M32 11V53M11 32H53M13.81 21.5H50.19M13.81 42.5H50.19"/>
   </g>
-  <text>
-    <textPath href="#rim" textLength="131">q90tk35wvu632kd7up489eva238ys334ztfn25dd50uamzyag4705qjpqy6uxg3dhzslsvwnlmtakz8g4lggw9cqyzy</textPath>
-    <textPath href="#equator" textLength="42">ydxydsdr3glrjjf7a77e99wt23pj5</textPath>
-    <textPath href="#north" textLength="36">qk0m5euulvhdwnllafwh36pu7</textPath>
-    <textPath href="#south" textLength="36">mwnh4ejn4c5l9wfqfqsydwryg</textPath>
-    <textPath href="#prime" textLength="42">km3g0cx8fla47mpr52l5y8zuqzpzz</textPath>
-    <textPath href="#east" textLength="50">xnzxcx3c503efylwlyyr62j5ryzkrat0txy</textPath>
-    <textPath href="#west" textLength="50">8rhyx53n2sxa85dxav5zch2upakpjgssast</textPath>
-  </text>
 </svg>

@@ -1,18 +1,14 @@
 import { createSignal, For, Show } from "solid-js";
-import sample from "../data/sample.json";
 import {
 	decodeDisclosure,
 	load,
 	verifyDisclosure,
 	type DecodeReport,
-	type Sample,
 	type VerifyReport,
 	type VerifyItem,
 } from "../lib/wasm";
 import { NETWORKS, parseHeight, shortHex, zec } from "../lib/format";
 import { CopyButton, Field } from "../components/ui";
-
-const fixture = sample as Sample;
 
 const [text, setText] = createSignal("");
 const [report, setReport] = createSignal<DecodeReport | null>(null);
@@ -26,14 +22,13 @@ const [verified, setVerified] = createSignal<VerifyReport | null>(null);
 const [checkError, setCheckError] = createSignal("");
 
 export default function Inspect() {
-	async function run(input?: string) {
-		const source = (input ?? text()).trim();
-		if (input !== undefined) setText(input);
+	async function run() {
+		const source = text().trim();
 		setError("");
 		setReport(null);
 		setVerified(null);
 		if (!source) {
-			setError("Give a disclosure string, or load the example.");
+			setError("Give a disclosure string.");
 			return;
 		}
 		setBusy(true);
@@ -46,11 +41,6 @@ export default function Inspect() {
 			setReport(r);
 			setNetwork(r.network);
 		}
-	}
-
-	function loadExample() {
-		void run(fixture.disclosure);
-		setChecking(false);
 	}
 
 	async function check() {
@@ -109,9 +99,6 @@ export default function Inspect() {
 						>
 							Decode
 						</button>
-						<button class="btn" onClick={loadExample}>
-							Load example
-						</button>
 						<Show when={report()}>
 							<button class="btn" onClick={() => setChecking(!checking())}>
 								{checking()
@@ -166,16 +153,6 @@ export default function Inspect() {
 								onClick={() => void check()}
 							>
 								Check
-							</button>
-							<button
-								class="btn"
-								onClick={() => {
-									setNetwork(fixture.network);
-									setHeight(String(fixture.height));
-									setTx(fixture.tx);
-								}}
-							>
-								Use the example transaction
 							</button>
 						</div>
 						<Show when={checkError()}>
