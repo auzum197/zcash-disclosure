@@ -12,6 +12,15 @@ export type {
 	VerifyReport,
 } from "../wasm/zdisclosure_wasm.js";
 
+export interface Sample {
+	network: string;
+	height: number;
+	tx: string;
+	receiverUfvk: string;
+	senderUfvk: string;
+	disclosure: string;
+}
+
 type Report = DecodeReport | VerifyReport | CreateReport;
 
 export type Request =

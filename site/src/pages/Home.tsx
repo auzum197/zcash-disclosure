@@ -1,6 +1,11 @@
+import sample from "../data/sample.json";
+import { type Sample } from "../lib/wasm";
+import { hrpOf } from "../lib/format";
 import { A } from "@solidjs/router";
 import { onCleanup, onMount } from "solid-js";
 import { buzzFault } from "../lib/buzz";
+
+const fixture = sample as Sample;
 
 const rand = (lo: number, hi: number) => lo + Math.random() * (hi - lo);
 const pick = <T,>(xs: readonly [T, ...T[]]) => xs[Math.floor(Math.random() * xs.length)] ?? xs[0];
@@ -71,6 +76,8 @@ function malfunction(tube: HTMLElement) {
   schedule(rand(2000, 4500));
   return () => clearTimeout(timer);
 }
+
+const PREFIX = `${hrpOf(fixture.network)}1`;
 
 const GRAMMAR = [
   'disclosure   = hrp "1" payload         ; one string, Bech32m over the payload',
@@ -179,7 +186,13 @@ export default function Home() {
 
       <section class="block">
         <h2 class="section-title">ABNF</h2>
-        <Grammar />
+        <div class="stack">
+          <Grammar />
+          <p class="string-view codeblock">
+            <span class="hrp-part">{PREFIX}</span>
+            <span class="rest">{fixture.disclosure.slice(PREFIX.length)}</span>
+          </p>
+        </div>
       </section>
 
       <section class="block">
