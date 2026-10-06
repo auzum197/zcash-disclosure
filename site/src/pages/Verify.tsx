@@ -1,17 +1,12 @@
 import { createSignal, For, Show } from "solid-js";
-import sample from "../data/sample.json";
 import {
 	load,
 	verifyDisclosure,
-	type Sample,
 	type VerifyReport,
 } from "../lib/wasm";
 import { NETWORKS, parseHeight, zec } from "../lib/format";
 import { Field } from "../components/ui";
 
-const fixture = sample as Sample;
-
-// Module scope: the tab switcher unmounts pages, and the work on them survives.
 const [disclosure, setDisclosure] = createSignal("");
 const [tx, setTx] = createSignal("");
 const [height, setHeight] = createSignal("");
@@ -21,15 +16,6 @@ const [error, setError] = createSignal("");
 const [busy, setBusy] = createSignal(false);
 
 export default function Verify() {
-	function loadExample() {
-		setDisclosure(fixture.disclosure);
-		setTx(fixture.tx);
-		setHeight(String(fixture.height));
-		setNetwork(fixture.network);
-		setError("");
-		setReport(null);
-	}
-
 	async function run() {
 		setError("");
 		setReport(null);
@@ -44,7 +30,12 @@ export default function Verify() {
 		}
 		setBusy(true);
 		await load();
-		const r = verifyDisclosure(tx().trim(), h, network(), disclosure().trim());
+		const r = await verifyDisclosure(
+			tx().trim(),
+			h,
+			network(),
+			disclosure().trim(),
+		);
 		setBusy(false);
 		if (typeof r === "string") {
 			setError(r);
@@ -118,9 +109,6 @@ export default function Verify() {
 							onClick={() => void run()}
 						>
 							Verify
-						</button>
-						<button class="btn" onClick={loadExample}>
-							Load example
 						</button>
 					</div>
 					<Show when={error()}>

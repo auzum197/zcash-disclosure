@@ -1,0 +1,6 @@
+neon-buzz.mp3
+
+An 8 second loop cut from "JM_NOIZ_Buzz 01 - Neon Light.wav" by Julien_Matthey,
+https://freesound.org/people/Julien_Matthey/sounds/118340/
+Released under Creative Commons 0. Trimmed to seconds 2 to 11, crossfaded
+into itself over one second, mono, 64 kbit/s.

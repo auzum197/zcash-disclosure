@@ -1,20 +1,15 @@
 import { createSignal, For, Show } from "solid-js";
-import sample from "../data/sample.json";
 import {
 	decodeDisclosure,
 	load,
 	verifyDisclosure,
 	type DecodeReport,
-	type Sample,
 	type VerifyReport,
 	type VerifyItem,
 } from "../lib/wasm";
 import { NETWORKS, parseHeight, shortHex, zec } from "../lib/format";
 import { CopyButton, Field } from "../components/ui";
 
-const fixture = sample as Sample;
-
-// Module scope: the tab switcher unmounts pages, and the work on them survives.
 const [text, setText] = createSignal("");
 const [report, setReport] = createSignal<DecodeReport | null>(null);
 const [error, setError] = createSignal("");
@@ -27,19 +22,18 @@ const [verified, setVerified] = createSignal<VerifyReport | null>(null);
 const [checkError, setCheckError] = createSignal("");
 
 export default function Inspect() {
-	async function run(input?: string) {
-		const source = (input ?? text()).trim();
-		if (input !== undefined) setText(input);
+	async function run() {
+		const source = text().trim();
 		setError("");
 		setReport(null);
 		setVerified(null);
 		if (!source) {
-			setError("Give a disclosure string, or load the example.");
+			setError("Give a disclosure string.");
 			return;
 		}
 		setBusy(true);
 		await load();
-		const r = decodeDisclosure(source);
+		const r = await decodeDisclosure(source);
 		setBusy(false);
 		if (typeof r === "string") {
 			setError(r);
@@ -47,11 +41,6 @@ export default function Inspect() {
 			setReport(r);
 			setNetwork(r.network);
 		}
-	}
-
-	function loadExample() {
-		void run(fixture.disclosure);
-		setChecking(false);
 	}
 
 	async function check() {
@@ -64,7 +53,12 @@ export default function Inspect() {
 		}
 		setBusy(true);
 		await load();
-		const r = verifyDisclosure(tx().trim(), h, network(), text().trim());
+		const r = await verifyDisclosure(
+			tx().trim(),
+			h,
+			network(),
+			text().trim(),
+		);
 		setBusy(false);
 		if (typeof r === "string") {
 			setCheckError(r);
@@ -104,9 +98,6 @@ export default function Inspect() {
 							onClick={() => void run()}
 						>
 							Decode
-						</button>
-						<button class="btn" onClick={loadExample}>
-							Load example
 						</button>
 						<Show when={report()}>
 							<button class="btn" onClick={() => setChecking(!checking())}>
@@ -162,16 +153,6 @@ export default function Inspect() {
 								onClick={() => void check()}
 							>
 								Check
-							</button>
-							<button
-								class="btn"
-								onClick={() => {
-									setNetwork(fixture.network);
-									setHeight(String(fixture.height));
-									setTx(fixture.tx);
-								}}
-							>
-								Use the example transaction
 							</button>
 						</div>
 						<Show when={checkError()}>

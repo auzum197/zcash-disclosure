@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>og</title>
+    <style>
+      @font-face {
+        font-family: "Geist";
+        src: url("/fonts/Geist-Variable.woff2") format("woff2");
+        font-weight: 100 900;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Geist Mono";
+        src: url("/fonts/GeistMono-Variable.woff2") format("woff2");
+        font-weight: 100 900;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Geist Pixel";
+        src: url("/fonts/GeistPixel-Circle.woff2") format("woff2");
+        font-weight: 500;
+        font-display: block;
+      }
+
+      :root {
+        --bg: #0a0a0c;
+        --text: #f5f4f0;
+        --text-2: #e4e3de;
+        --text-3: #d8d7d2;
+        --text-4: #a09f9a;
+        --well: rgba(255, 255, 255, 0.06);
+        --halo:
+          0 0 1px rgba(245, 244, 240, 0.6),
+          0 0 10px rgba(245, 244, 240, 0.2),
+          0 0 32px rgba(245, 244, 240, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--text);
+        font: 400 16px/1.5 "Geist", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* 1200x630, the size every platform takes for a large card */
+      .card {
+        position: relative;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        padding: 56px 64px;
+        display: flex;
+        flex-direction: column;
+        background:
+          radial-gradient(760px 460px at 50% 50%, rgba(245, 244, 240, 0.04), transparent 70%),
+          var(--bg);
+      }
+
+      .globe {
+        position: absolute;
+        inset: 0;
+      }
+
+      .top {
+        position: relative;
+        display: flex;
+        justify-content: center;
+      }
+
+      .wordmark {
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .body {
+        position: relative;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        max-width: 920px;
+        margin: 0 auto 38px;
+      }
+
+      .sign {
+        margin: 0;
+        font: 500 66px/1 "Geist Pixel", monospace;
+        text-shadow: var(--halo);
+        text-wrap: balance;
+      }
+
+      .sign.big {
+        font-size: 128px;
+      }
+
+      .line {
+        margin: 26px 0 0;
+        font-size: 34px;
+        font-weight: 650;
+        letter-spacing: -0.025em;
+        line-height: 1.15;
+        color: var(--text-2);
+      }
+
+      .touch {
+        width: 180px;
+        height: 180px;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import { ROUTES } from "/src/meta.ts";
+
+      const page = new URLSearchParams(location.search).get("page") ?? "home";
+      const ink = "#0a0a0c";
+      const paper = "#f5f4f0";
+
+      // the icon: a globe seen face on, radius 21 about (32, 32), in lines
+      const icon = (size, tile, lines, radius = 14) => `
+        <svg width="${size}" height="${size}" viewBox="0 0 64 64" aria-hidden="true">
+          <rect width="64" height="64" rx="${radius}" fill="${tile}" />
+          <g fill="none" stroke="${lines}" stroke-width="2.25" stroke-linecap="round">
+            <circle cx="32" cy="32" r="21" />
+            <ellipse cx="32" cy="32" rx="14.85" ry="21" />
+            <path d="M32 11V53M11 32H53M13.81 21.5H50.19M13.81 42.5H50.19" />
+          </g>
+        </svg>`;
+
+      if (page === "touch") {
+        document.body.innerHTML = icon(180, paper, ink, 0).replace("<svg", '<svg class="touch"');
+      } else {
+        const m = ROUTES.find((r) => r.slug === page);
+        const word = { create: "Create", inspect: "Inspect", verify: "Verify" }[page];
+        document.body.innerHTML = `
+          <main class="card ${page}">
+            <svg class="globe" width="1200" height="630" viewBox="0 0 1200 630" aria-hidden="true"></svg>
+            <header class="top">
+              <span class="wordmark">zcash-disclosure</span>
+            </header>
+            <section class="body">
+              ${word ? `<h1 class="sign big">${word}</h1>` : `<h1 class="sign">${m.headline}.</h1>`}
+              <p class="line">${m.line}</p>
+            </section>
+          </main>`;
+        drawGlobe(document.querySelector(".globe"));
+      }
+
+      // the logo's globe in 3D, as the motion graphic ends on it: the icon's
+      // lines bright, the rest of a 15 degree grid and an orbit faint, and
+      // whatever is behind the sphere fainter still
+      function drawGlobe(svg) {
+        const [cx, cy, r] = [600, 315, 270];
+        const rad = Math.PI / 180;
+        const [yaw, tilt] = [26 * rad, -22 * rad];
+        const meridian = (lon) => (u) => [Math.cos(u) * Math.sin(lon * rad), -Math.sin(u), Math.cos(u) * Math.cos(lon * rad)];
+        const parallel = (lat) => (u) => [Math.cos(lat * rad) * Math.sin(u), -Math.sin(lat * rad), Math.cos(lat * rad) * Math.cos(u)];
+        const orbit = (u) => [1.42 * Math.cos(u) * Math.cos(18 * rad), 1.42 * Math.cos(u) * Math.sin(18 * rad), 1.42 * Math.sin(u)];
+        const sets = [
+          [[...[0, 45, -45, 90].map(meridian), ...[0, 30, -30].map(parallel)], 2, 0.2, 0.05],
+          [[...[15, 30, 60, 75, -15, -30, -60, -75].map(meridian), ...[15, 45, 60, 75, -15, -45, -60, -75].map(parallel), orbit], 1, 0.08, 0.02],
+        ];
+        for (const [curves, width, front, back] of sets) {
+          const d = { front: "", back: "" };
+          for (const curve of curves) {
+            let last;
+            for (let i = 0; i <= 160; i++) {
+              const [x, y, z] = curve((i / 160) * 2 * Math.PI);
+              const x1 = x * Math.cos(yaw) + z * Math.sin(yaw);
+              const z1 = z * Math.cos(yaw) - x * Math.sin(yaw);
+              const pt = `${(cx + r * x1).toFixed(1)} ${(cy + r * (y * Math.cos(tilt) - z1 * Math.sin(tilt))).toFixed(1)}`;
+              const depth = y * Math.sin(tilt) + z1 * Math.cos(tilt);
+              if (last) d[last.depth + depth >= 0 ? "front" : "back"] += `M${last.pt}L${pt}`;
+              last = { pt, depth };
+            }
+          }
+          for (const [side, opacity] of [["back", back], ["front", front]]) {
+            svg.insertAdjacentHTML(
+              "beforeend",
+              `<path d="${d[side]}" fill="none" stroke="#f5f4f0" stroke-width="${width}" stroke-linecap="round" opacity="${opacity}" />`,
+            );
+          }
+        }
+      }
+
+      await document.fonts.ready;
+      window.ready = true;
+    </script>
+  </body>
+</html>

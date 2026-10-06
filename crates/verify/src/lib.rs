@@ -47,7 +47,7 @@ pub fn run(cli: Cli, io: &mut Io<'_>) -> Exit {
 }
 
 fn report(cli: &Cli, io: &mut Io<'_>, e: &Error) {
-    if !cli.quiet {
+    if !cli.quiet && !e.is_quiet() {
         io.warn(PROGRAM, e);
     }
 }

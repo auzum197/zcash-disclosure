@@ -1,8 +1,4 @@
 #!/usr/bin/env node
-// APCA-W3 0.1.9 contrast audit for the site palette, replacing WCAG ratios.
-// Every text pair targets Lc 75 (body minimum), display text 90. Placeholders and
-// decorative glyphs target Lc 45.
-// Run: npm run check:contrast
 import { readFileSync } from "node:fs";
 
 const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");

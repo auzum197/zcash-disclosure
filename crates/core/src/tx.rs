@@ -11,7 +11,7 @@ use crate::network::Params;
 pub fn from_hex_or_bytes(raw: Vec<u8>) -> Result<Vec<u8>, Error> {
     let trimmed = raw.trim_ascii();
     if !trimmed.is_empty() && trimmed.iter().all(u8::is_ascii_hexdigit) {
-        hex::decode(trimmed).map_err(|e| Error::new(format!("invalid transaction hex: {e}")))
+        hex::decode(trimmed).map_err(|e| Error::InvalidHex(e.to_string()))
     } else {
         Ok(raw)
     }
@@ -22,12 +22,9 @@ pub fn from_hex_or_bytes(raw: Vec<u8>) -> Result<Vec<u8>, Error> {
 pub fn parse(params: &Params, bytes: &[u8], height: BlockHeight) -> Result<Transaction, Error> {
     let mut rest = bytes;
     let tx = Transaction::read(&mut rest, BranchId::for_height(params, height))
-        .map_err(|e| Error::new(format!("cannot parse the transaction: {e}")))?;
+        .map_err(|e| Error::UnparsableTransaction(e.to_string()))?;
     if !rest.is_empty() {
-        return Err(Error::new(format!(
-            "{} bytes follow the end of the transaction",
-            rest.len()
-        )));
+        return Err(Error::TrailingBytes(rest.len()));
     }
     Ok(tx)
 }

@@ -17,17 +17,13 @@ zdisclosure-cli.workspace = true
 zdisclosure-core.workspace = true
 
 [dev-dependencies]
+clap.workspace = true
 hex.workspace = true
-incrementalmerkletree.workspace = true
-rand_chacha.workspace = true
-rand_core.workspace = true
-sapling.workspace = true
 serde_json.workspace = true
-transparent.workspace = true
 zcash_disclosure.workspace = true
 zcash_keys.workspace = true
-zcash_primitives = { workspace = true, features = ["test-dependencies"] }
+zcash_primitives.workspace = true
 zcash_protocol.workspace = true
 zdisclosure-create.workspace = true
+zdisclosure-fixture.workspace = true
 zdisclosure-inspect = { path = "../inspect" }
-zip32.workspace = true

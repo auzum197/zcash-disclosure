@@ -1,0 +1,12 @@
+{
+  "name": "zcash-disclosure-motion",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "render": "node render.mjs",
+    "preview": "node render.mjs --preview"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.63.0"
+  }
+}

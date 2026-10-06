@@ -18,6 +18,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(zcash_unstable, values("zf
 zdisclosure-cli = { path = "crates/cli" }
 zdisclosure-core = { path = "crates/core" }
 zdisclosure-create = { path = "crates/create" }
+zdisclosure-fixture = { path = "crates/fixture" }
 
 # One branch of librustzcash for every crate, so their types unify. The revs pin them so
 # regenerating the lockfile cannot pick up a moved branch head. Halo2's multicore feature

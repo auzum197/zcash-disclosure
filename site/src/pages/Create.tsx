@@ -1,18 +1,13 @@
 import { createSignal, For, Show } from "solid-js";
-import sample from "../data/sample.json";
 import {
 	createDisclosure,
 	load,
 	type CreateReport,
 	type OutputInfo,
-	type Sample,
 } from "../lib/wasm";
 import { NETWORKS, parseHeight, zec } from "../lib/format";
 import { CopyButton, Field } from "../components/ui";
 
-const fixture = sample as Sample;
-
-// Module scope: the tab switcher unmounts pages, and the work on them survives.
 const [ufvk, setUfvk] = createSignal("");
 const [tx, setTx] = createSignal("");
 const [height, setHeight] = createSignal("");
@@ -24,16 +19,6 @@ const [error, setError] = createSignal("");
 const [busy, setBusy] = createSignal(false);
 
 export default function Create() {
-	function loadExample() {
-		setUfvk(fixture.receiverUfvk);
-		setTx(fixture.tx);
-		setHeight(String(fixture.height));
-		setNetwork(fixture.network);
-		setError("");
-		setReport(null);
-		setSelected(new Set<number>());
-	}
-
 	async function list() {
 		setError("");
 		setReport(null);
@@ -48,7 +33,7 @@ export default function Create() {
 		}
 		setBusy(true);
 		await load();
-		const r = createDisclosure(
+		const r = await createDisclosure(
 			ufvk().trim(),
 			tx().trim(),
 			h,
@@ -78,7 +63,7 @@ export default function Create() {
 		}
 		setBusy(true);
 		await load();
-		const r = createDisclosure(
+		const r = await createDisclosure(
 			ufvk().trim(),
 			tx().trim(),
 			h,
@@ -164,9 +149,6 @@ export default function Create() {
 							onClick={() => void list()}
 						>
 							List outputs
-						</button>
-						<button class="btn" onClick={loadExample}>
-							Load example
 						</button>
 					</div>
 					<Show when={error()}>

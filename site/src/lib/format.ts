@@ -20,14 +20,6 @@ export function parseHeight(text: string): number | null {
 
 export const NETWORKS = ["main", "test", "regtest"] as const;
 
-export function hrpOf(network: string): string {
-  return network === "main"
-    ? "zdu"
-    : network === "test"
-      ? "zdutest"
-      : "zduregtest";
-}
-
 export async function copyText(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text);

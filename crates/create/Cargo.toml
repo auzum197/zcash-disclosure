@@ -15,7 +15,6 @@ workspace = true
 clap.workspace = true
 qrcode.workspace = true
 zcash_disclosure.workspace = true
-zcash_keys.workspace = true
 zcash_protocol.workspace = true
 zdisclosure-cli.workspace = true
 zdisclosure-core.workspace = true

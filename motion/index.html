@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="color-scheme" content="dark" />
+    <title>zcash-disclosure</title>
+    <link rel="preload" href="../site/public/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="../site/public/fonts/GeistMono-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="../site/public/fonts/GeistPixel-Circle.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="main.js"></script>
+  </head>
+  <body>
+    <main class="stage">
+      <section class="scene lit" data-from="0" data-to="16">
+        <h1 class="sign" data-at="2"><span class="tube">Sapling</span> note disclosures, decoded in your browser.</h1>
+      </section>
+
+      <section class="scene split" data-from="16" data-to="28">
+        <p class="overline">Shielded</p>
+        <p class="statement">A shielded transaction hides the amount and the recipient.</p>
+        <p class="statement dim" data-at="21">Sometimes you need to show one payment to one person.</p>
+        <div class="outputs" aria-hidden="true">
+          <div class="slab"><span>output 0</span><i></i><i></i></div>
+          <div class="slab"><span>output 1</span><i></i><i></i></div>
+          <div class="slab"><span>output 2</span><i></i><i></i></div>
+        </div>
+      </section>
+
+      <section class="scene" data-from="28" data-to="44">
+        <p class="overline">Disclosure</p>
+        <p class="statement">A disclosure is one string.</p>
+        <p class="codeblock string-view grammar typed" data-type="30 37">
+          <span class="ghost">disclosure   = hrp "1" payload
+payload      = version txid 1*64item
+item         = typecode length body
+body         = index pk_d secret
+hrp          = "zdu" / "zdutest" / "zduregtest"<span class="cursor"></span></span>
+          <span class="live"><span class="hrp-part">disclosure</span><span class="rest">   = hrp "1" payload
+payload      = version txid 1*64item
+item         = typecode length body
+body         = index pk_d secret
+hrp          = "zdu" / "zdutest" / "zduregtest"</span><span class="cursor"></span></span>
+        </p>
+        <p class="note" data-at="38">It is unsigned. It opens chosen Sapling outputs of one transaction.</p>
+      </section>
+
+      <section class="scene" data-from="44" data-to="56">
+        <p class="overline">What it reveals</p>
+        <div class="reveal" aria-hidden="true">
+          <div class="slab"><i></i><i></i></div>
+          <div class="slab"><i></i><i></i></div>
+          <div class="slab"><i></i><i></i></div>
+        </div>
+        <article class="result" data-at="46">
+          <h3><span class="mono">Sapling output</span><span class="note mono">type 0x02</span></h3>
+          <dl class="kv">
+            <div data-at="47"><dt>value</dt><dd><i class="bar" style="width: 7rem"></i></dd></div>
+            <div data-at="48"><dt>address</dt><dd><i class="bar" style="width: 30rem"></i></dd></div>
+            <div data-at="49"><dt>memo</dt><dd><i class="bar" style="width: 11rem"></i></dd></div>
+          </dl>
+          <p class="verdict ok" data-at="50"><span class="mark">✓</span><span>Matches the transaction.</span></p>
+        </article>
+      </section>
+
+      <section class="scene end lit" data-from="56" data-to="66">
+        <p class="wordmark">
+          <svg class="emblem" viewBox="0 0 64 64" width="112" height="112" aria-hidden="true">
+            <g class="globe" data-at="0" data-until="60.5">
+              <path class="detail-back" />
+              <path class="globe-back" />
+              <path class="detail-front" />
+              <path class="globe-front" />
+            </g>
+            <g class="icon" data-at="60.5">
+              <rect class="tile" width="64" height="64" rx="14" />
+              <g class="lines">
+                <circle cx="32" cy="32" r="21" />
+                <ellipse cx="32" cy="32" rx="14.85" ry="21" />
+                <path d="M32 11V53M11 32H53M13.81 21.5H50.19M13.81 42.5H50.19" />
+              </g>
+            </g>
+          </svg>
+          <span data-at="60.5">zcash-disclosure</span>
+        </p>
+        <h1 class="sign" data-at="60.5"><span class="tube">Sapling</span> note disclosures.</h1>
+      </section>
+
+      <button class="play" type="button" hidden>Play</button>
+    </main>
+  </body>
+</html>
