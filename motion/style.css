@@ -1,0 +1,408 @@
+/* the site's dark theme on a 1280x720 stage. render.mjs captures it at a device
+   scale of 1.5, so the site's own px and rem values land on a 1920x1080 frame
+   at the proportions they have on the site. */
+
+@font-face {
+  font-family: "Geist";
+  src: url("../site/public/fonts/Geist-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("../site/public/fonts/GeistMono-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Geist Pixel";
+  src: url("../site/public/fonts/GeistPixel-Circle.woff2") format("woff2");
+  font-weight: 500;
+  font-display: block;
+}
+
+:root {
+  color-scheme: dark;
+  --bg: #0a0a0c;
+  --bg-glow: rgba(245, 244, 240, 0.025);
+  --card-top: rgba(255, 255, 255, 0.05);
+  --card-bottom: rgba(255, 255, 255, 0.03);
+  --well: rgba(255, 255, 255, 0.06);
+  --text: #f5f4f0;
+  --text-2: #e4e3de;
+  --text-3: #d8d7d2;
+  --text-4: #a09f9a;
+  --ok-bg: rgba(255, 255, 255, 0.09);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.16), 0 6px 24px rgba(0, 0, 0, 0.16);
+  --r-card: 18px;
+  --r-control: 12px;
+  --font: "Geist", ui-sans-serif, -apple-system, "Helvetica Neue", system-ui, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --pixel: "Geist Pixel", "Geist Mono", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  font: 400 16px/1.6 var(--font);
+  color: var(--text);
+  text-wrap: pretty;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.render body {
+  place-items: start;
+}
+
+.stage {
+  position: relative;
+  width: 1280px;
+  height: 720px;
+  overflow: hidden;
+  background:
+    radial-gradient(100rem 46rem at 78% -16%, var(--bg-glow), transparent 62%),
+    var(--bg);
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 112px;
+}
+
+.scene[hidden] {
+  display: none;
+}
+
+p,
+h1,
+h3,
+dl,
+dd {
+  margin: 0;
+}
+
+.overline,
+.kv dt {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  font-weight: 560;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.overline {
+  font-size: 0.95rem;
+  margin-bottom: 1.4rem;
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+/* the lit sign */
+.sign {
+  font-family: var(--pixel);
+  font-weight: 500;
+  font-size: 5.6rem;
+  line-height: 1;
+  letter-spacing: 0;
+  max-width: 15ch;
+  text-wrap: balance;
+}
+
+.statement {
+  font-size: 3.1rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  max-width: 21ch;
+  text-wrap: balance;
+}
+
+.statement.dim {
+  color: var(--text-4);
+  margin-top: 1.6rem;
+}
+
+.split .statement {
+  max-width: 560px;
+}
+
+.note {
+  color: var(--text-2);
+  font-size: 1.3rem;
+  line-height: 1.5;
+}
+
+.codeblock {
+  font-family: var(--mono);
+  line-height: 1.65;
+  background: var(--well);
+  border-radius: var(--r-control);
+  padding: 1.1rem 1.3rem;
+  overflow-wrap: anywhere;
+  margin: 2rem 0 1.6rem;
+  width: 100%;
+}
+
+.string-view {
+  font-size: 1.15rem;
+  line-height: 1.75;
+}
+
+.string-view .hrp-part {
+  color: var(--text);
+  font-weight: 650;
+}
+
+.string-view .rest {
+  color: var(--text-3);
+}
+
+.typed {
+  display: grid;
+}
+
+/* the grammar types out as written, column for column */
+.grammar > span {
+  white-space: pre;
+  overflow-wrap: normal;
+}
+
+/* a field the card names without a value in it */
+.bar {
+  display: inline-block;
+  height: 0.75em;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.typed > * {
+  grid-area: 1 / 1;
+}
+
+.ghost {
+  visibility: hidden;
+}
+
+.cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.25em;
+  margin-left: 1px;
+  vertical-align: -0.25em;
+  background: var(--text);
+}
+
+.result {
+  width: 100%;
+  padding: 1.6rem 1.8rem 1.8rem;
+  background: linear-gradient(var(--card-top), var(--card-bottom));
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+}
+
+.result h3 {
+  display: flex;
+  gap: 0.8rem;
+  align-items: baseline;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.result h3 .note {
+  font-size: 1rem;
+  color: var(--text-4);
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 0.7rem 1.25rem;
+  align-items: baseline;
+}
+
+.kv > div {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: baseline;
+}
+
+.kv dt {
+  font-size: 0.9rem;
+}
+
+.kv dd {
+  font-family: var(--mono);
+  font-size: 1.12rem;
+  overflow-wrap: anywhere;
+}
+
+.verdict {
+  margin-top: 1.4rem;
+  border-radius: var(--r-control);
+  padding: 0.9rem 1.2rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.verdict.ok {
+  background: var(--ok-bg);
+}
+
+.verdict .mark {
+  width: 1.1rem;
+  text-align: center;
+  font-family: var(--mono);
+  font-weight: 700;
+}
+
+.end .wordmark {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  margin-bottom: 2.4rem;
+  font-size: 4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.end .wordmark svg {
+  display: block;
+  overflow: visible;
+}
+
+.globe path {
+  fill: none;
+  stroke: var(--text);
+  stroke-linecap: round;
+}
+
+.end .tile {
+  fill: #f5f4f0;
+}
+
+.end .lines {
+  fill: none;
+  stroke: #0a0a0c;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+}
+
+/* the micrographics: slabs are the outputs of a transaction. Their containers
+   have no size and sit where the shape is centered. With no perspective
+   anywhere, their 3D is drawn orthographic. */
+.outputs,
+.reveal {
+  position: absolute;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+}
+
+.outputs {
+  left: 930px;
+  top: 360px;
+}
+
+.reveal {
+  left: 1060px;
+  top: 150px;
+}
+
+.slab {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  left: -75px;
+  top: -94px;
+  width: 150px;
+  height: 188px;
+  padding: 16px;
+  border-radius: var(--r-card);
+  background: #141417;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16), var(--shadow-card);
+}
+
+.slab span {
+  margin-bottom: auto;
+  font: 560 0.7rem/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.slab i {
+  height: 10px;
+  width: 80%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.slab i + i {
+  width: 55%;
+}
+
+.reveal .slab {
+  left: -30px;
+  top: -38px;
+  width: 60px;
+  height: 76px;
+  padding: 8px;
+  gap: 5px;
+  border-radius: 8px;
+  justify-content: flex-end;
+}
+
+.reveal .slab i {
+  height: 5px;
+}
+
+.play {
+  position: absolute;
+  right: 32px;
+  bottom: 28px;
+  appearance: none;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  font: 560 0.76rem/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.7rem 1.1rem;
+  cursor: pointer;
+}
+
+.play[hidden] {
+  display: none;
+}
