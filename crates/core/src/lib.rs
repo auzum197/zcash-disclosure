@@ -53,6 +53,8 @@ pub enum Error {
     InvalidUfvk(NetworkType),
     /// The key has no Sapling component.
     NoSaplingKey,
+    /// The transaction has no Sapling output.
+    NoSaplingOutputs,
     /// No output is left to disclose.
     NothingDisclosable,
     /// The key does not open the output at this index.
@@ -97,6 +99,9 @@ impl fmt::Display for Error {
                 )
             }
             Error::NoSaplingKey => f.write_str("the key has no Sapling component"),
+            Error::NoSaplingOutputs => {
+                f.write_str("unsupported transaction: it has no Sapling output")
+            }
             Error::NothingDisclosable => f.write_str("the key opens no output to disclose"),
             Error::OutputNotOpened(index) => write!(f, "the key does not open output {index}"),
             Error::InternalOutput(index) => {

@@ -8,8 +8,12 @@ use std::path::{Path, PathBuf};
 
 use clap::Parser;
 use zcash_disclosure::{Disclosure, Kind};
+use zcash_keys::keys::UnifiedSpendingKey;
+use zcash_protocol::consensus::{BlockHeight, BranchId};
 use zdisclosure_cli::{Exit, Io};
+use zdisclosure_core::network::default_regtest;
 use zdisclosure_fixture::{HEIGHT, INVOICE, RENT};
+use zip32::AccountId;
 
 /// A scratch directory, removed on drop.
 struct Scratch(PathBuf);
@@ -271,6 +275,84 @@ fn items_of_other_pools_are_refused() {
         assert_eq!(r.exit, Exit::Usage);
         assert!(r.stderr.contains("not a Sapling item"), "{}", r.stderr);
         assert_eq!(inspect(&[mixed]).exit, Exit::Usage);
+    }
+}
+
+/// A v5 transaction with one transparent output and no shielded bundle, serialized by hand.
+fn transparent_only_tx() -> Vec<u8> {
+    let branch = BranchId::for_height(&default_regtest(), BlockHeight::from_u32(HEIGHT));
+    let mut raw = vec![];
+    raw.extend_from_slice(&0x8000_0005u32.to_le_bytes());
+    raw.extend_from_slice(&0x26A7_270Au32.to_le_bytes());
+    raw.extend_from_slice(&u32::from(branch).to_le_bytes());
+    raw.extend_from_slice(&[0; 8]);
+    raw.push(0);
+    raw.push(1);
+    raw.extend_from_slice(&1_000u64.to_le_bytes());
+    raw.push(25);
+    raw.extend_from_slice(&[0x76, 0xa9, 0x14]);
+    raw.extend_from_slice(&[0x11; 20]);
+    raw.extend_from_slice(&[0x88, 0xac]);
+    raw.extend_from_slice(&[0, 0, 0]);
+    raw
+}
+
+#[test]
+fn a_transaction_without_sapling_outputs_is_unsupported() {
+    let fx = Fixture::build("no-sapling");
+    let tx = fx
+        .scratch
+        .write("transparent.hex", &hex::encode(transparent_only_tx()));
+    for flags in [&["--list"][..], &["--all"], &["--output", "0"]] {
+        let r = create(&args(
+            &[
+                "--ufvk-file",
+                &fx.receiver,
+                "--network",
+                "regtest",
+                "--tx",
+                &tx,
+                "--height",
+            ],
+            &[HEIGHT.to_string()]
+                .into_iter()
+                .chain(flags.iter().map(|s| s.to_string()))
+                .collect::<Vec<_>>(),
+        ));
+        assert_eq!(r.exit, Exit::Usage, "{flags:?}: {}", r.stderr);
+        assert!(r.stdout.is_empty(), "{flags:?}");
+        assert!(
+            r.stderr.contains("it has no Sapling output"),
+            "{flags:?}: {}",
+            r.stderr
+        );
+    }
+}
+
+#[test]
+fn a_key_that_opens_no_output_fails() {
+    let fx = Fixture::build("stranger");
+    let params = default_regtest();
+    let stranger = UnifiedSpendingKey::from_seed(&params, &[3; 32], AccountId::ZERO)
+        .unwrap()
+        .to_unified_full_viewing_key()
+        .encode(&params);
+    let key = fx.scratch.write("stranger.ufvk", &stranger);
+    for flags in [&["--list"][..], &["--all"], &["--output", "0"]] {
+        let r = create(&args(
+            &["--ufvk-file", &key],
+            &fx.tx_args()
+                .into_iter()
+                .chain(flags.iter().map(|s| s.to_string()))
+                .collect::<Vec<_>>(),
+        ));
+        assert_eq!(r.exit, Exit::Failed, "{flags:?}: {}", r.stderr);
+        assert!(r.stdout.is_empty(), "{flags:?}");
+        assert!(
+            r.stderr.contains("the key opens no output to disclose"),
+            "{flags:?}: {}",
+            r.stderr
+        );
     }
 }
 
