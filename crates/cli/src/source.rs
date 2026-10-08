@@ -157,9 +157,11 @@ impl Lightwalletd {
     }
 
     fn fetch(&self, params: &Params, txid: TxId) -> Result<Fetched, Error> {
+        // The timeout future takes its timer from the runtime when it is built, so it must
+        // be built inside `block_on`, not passed to it.
         let (data, reported, tip) = match self
             .rt
-            .block_on(tokio::time::timeout(RPC_TIMEOUT, self.raw_and_tip(txid)))
+            .block_on(async { tokio::time::timeout(RPC_TIMEOUT, self.raw_and_tip(txid)).await })
         {
             Ok(inside) => inside?,
             Err(_) => {
@@ -236,7 +238,33 @@ fn place(txid: TxId, reported: u64, tip: u64) -> Result<(BlockHeight, u64), Erro
 
 #[cfg(test)]
 mod tests {
-    use super::loopback;
+    use std::net::TcpListener;
+
+    use zcash_protocol::TxId;
+    use zcash_protocol::consensus::Network;
+
+    use super::{Lightwalletd, loopback};
+    use crate::Exit;
+    use crate::network::Params;
+
+    /// A fetch against a port nothing listens on must come back as unavailable, not panic.
+    /// The timeout future is built outside the runtime's async context, which once panicked
+    /// with "there is no reactor running".
+    #[test]
+    fn fetch_from_a_closed_port_is_unavailable() {
+        let port = TcpListener::bind("127.0.0.1:0")
+            .and_then(|l| l.local_addr())
+            .map(|a| a.port())
+            .expect("an ephemeral port");
+        let server = Lightwalletd::new(&format!("http://127.0.0.1:{port}")).expect("a source");
+        let err = server
+            .fetch(
+                &Params::Public(Network::MainNetwork),
+                TxId::from_bytes([7; 32]),
+            )
+            .expect_err("nothing listens there");
+        assert_eq!(err.exit, Exit::Unavailable);
+    }
 
     #[test]
     fn only_local_urls_count_as_loopback() {

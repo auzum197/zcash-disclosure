@@ -16,7 +16,9 @@ pub fn decode_ufvk(params: &Params, text: &str) -> Result<UnifiedFullViewingKey,
         .map_err(|_| Error::InvalidUfvk(params.network_type()))
 }
 
-/// The Sapling outputs of a transaction that `key` can open, in bundle order.
+/// The Sapling outputs of a transaction that `key` can open, in bundle order. A transaction
+/// without Sapling outputs is unsupported, and a key that opens none of them is an error
+/// too, so that an empty list never passes for a result.
 pub fn discover(
     params: &Params,
     height: BlockHeight,
@@ -24,11 +26,21 @@ pub fn discover(
     key: &UnifiedFullViewingKey,
 ) -> Result<Vec<Disclosable>, Error> {
     let sapling = key.sapling().ok_or(Error::NoSaplingKey)?;
+    if tx
+        .sapling_bundle()
+        .is_none_or(|b| b.shielded_outputs().is_empty())
+    {
+        return Err(Error::NoSaplingOutputs);
+    }
     let keys = ViewingKeys {
         sapling: Some(sapling),
         orchard: None,
     };
-    Ok(zcash_disclosure::discover(params, height, tx, keys))
+    let found = zcash_disclosure::discover(params, height, tx, keys);
+    if found.is_empty() {
+        return Err(Error::NothingDisclosable);
+    }
+    Ok(found)
 }
 
 /// Selects the outputs to disclose, named by their index in the Sapling outputs.

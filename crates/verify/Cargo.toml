@@ -27,3 +27,4 @@ zcash_protocol.workspace = true
 zdisclosure-create.workspace = true
 zdisclosure-fixture.workspace = true
 zdisclosure-inspect = { path = "../inspect" }
+zip32.workspace = true

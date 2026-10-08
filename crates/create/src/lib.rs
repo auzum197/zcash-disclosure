@@ -100,7 +100,10 @@ fn create(cli: &Cli, io: &mut Io<'_>) -> Result<Exit, Error> {
     let fetched = source.fetch(&params, txid)?;
 
     let found =
-        produce::discover(&params, fetched.height, &fetched.tx, &ufvk).map_err(Error::usage)?;
+        produce::discover(&params, fetched.height, &fetched.tx, &ufvk).map_err(|e| match e {
+            zdisclosure_core::Error::NothingDisclosable => Error::failed(e),
+            _ => Error::usage(e),
+        })?;
 
     if cli.list {
         for d in &found {
