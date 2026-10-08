@@ -307,12 +307,160 @@ code,
   }
 }
 
+/* ---- status ---- */
+
+/* the draft status, one line under the header on every page. The pill is a
+   board of round pixels. A lamp sweeps in across them on load and parks
+   behind the label, which lights the moment the lamp reaches it. */
+.status {
+  width: 100%;
+  max-width: 64rem;
+  margin: 1.25rem auto 0;
+  padding: 0 1.5rem;
+  --dot: color-mix(in srgb, var(--text) 9%, transparent);
+  --lamp: color-mix(in srgb, var(--text) 70%, transparent);
+}
+
+@media (prefers-color-scheme: light) {
+  .status {
+    --dot: color-mix(in srgb, var(--text) 8%, transparent);
+    --lamp: color-mix(in srgb, var(--text) 45%, transparent);
+  }
+}
+
+.status-inner {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  background: var(--well);
+  border-radius: var(--r-control);
+  padding: 0.8rem 1rem;
+}
+
+/* the pixels: a solid, cut into dots by a mask. The lamp inside paints the
+   dots under it, and the mask stays put while the lamp moves. */
+.status-board {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--dot);
+  -webkit-mask-image: radial-gradient(circle, #000 1.1px, transparent 1.7px);
+  mask-image: radial-gradient(circle, #000 1.1px, transparent 1.7px);
+  -webkit-mask-size: 7px 7px;
+  mask-size: 7px 7px;
+  -webkit-mask-position: 0 0;
+  mask-position: 0 0;
+}
+
+.status-lamp {
+  position: absolute;
+  top: 50%;
+  left: 2.5rem;
+  width: 17rem;
+  height: 17rem;
+  margin: -8.5rem 0 0 -8.5rem;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--lamp), transparent 70%);
+  animation: sweep 1.6s var(--ease-out) backwards;
+}
+
+/* the lamp comes in from off the right edge and settles at its rest */
+@keyframes sweep {
+  from {
+    transform: translateX(min(64rem, 100vw));
+  }
+}
+
+/* the trail: cells the script in index.tsx lights along a random path. They
+   sit inside the mask, so each one is cut to the shape of its dot. */
+.status-trail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.status-trail circle {
+  fill: var(--text);
+  opacity: 0;
+}
+
+.status-badge {
+  flex: none;
+  font: 600 0.8rem/1 var(--font);
+  letter-spacing: -0.01em;
+  color: var(--bg);
+  background: var(--text);
+  border-radius: 999px;
+  padding: 0.36rem 0.66rem 0.34rem;
+  box-shadow: var(--halo);
+  animation: switch-on 1.6s backwards;
+}
+
+/* unlit until the lamp arrives, then on in one step */
+@keyframes switch-on {
+  0% {
+    color: var(--text-3);
+    background: var(--fill);
+    box-shadow: none;
+    animation-timing-function: steps(1, end);
+  }
+  48% {
+    color: var(--text-3);
+    background: var(--fill);
+    box-shadow: none;
+    animation-timing-function: steps(1, start);
+  }
+}
+
+.status p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.status a {
+  text-decoration-color: var(--text-4);
+  text-underline-offset: 0.15em;
+  transition: text-decoration-color var(--dur-1) ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .status a:hover {
+    text-decoration-color: var(--text);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-lamp,
+  .status-badge {
+    animation: none;
+  }
+}
+
+@media (max-width: 30rem) {
+  .status-inner {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
 main {
   flex: 1;
   width: 100%;
   max-width: 64rem;
   margin: 0 auto;
   padding: 3.5rem 1.5rem 5rem;
+}
+
+/* the status already opens the page, so the hero starts a little closer */
+.status + main {
+  padding-top: 2.75rem;
 }
 
 main.narrow {
