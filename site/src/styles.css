@@ -311,7 +311,7 @@ code,
 
 /* the draft status, one line under the header on every page. The pill is a
    board of round pixels. A lamp sweeps in across them on load and parks
-   behind the label, which lights the moment the lamp reaches it. */
+   behind the label. */
 .status {
   width: 100%;
   max-width: 64rem;
@@ -319,12 +319,19 @@ code,
   padding: 0 1.5rem;
   --dot: color-mix(in srgb, var(--text) 9%, transparent);
   --lamp: color-mix(in srgb, var(--text) 70%, transparent);
+  /* the lit edge: a thin ring inside and a faint spill outside it */
+  --edge:
+    inset 0 0 0 1px color-mix(in srgb, var(--text) 18%, transparent),
+    0 0 14px color-mix(in srgb, var(--text) 7%, transparent);
 }
 
 @media (prefers-color-scheme: light) {
   .status {
     --dot: color-mix(in srgb, var(--text) 8%, transparent);
     --lamp: color-mix(in srgb, var(--text) 45%, transparent);
+    --edge:
+      inset 0 0 0 1px color-mix(in srgb, var(--text) 14%, transparent),
+      0 0 0 transparent;
   }
 }
 
@@ -338,6 +345,7 @@ code,
   background: var(--well);
   border-radius: var(--r-control);
   padding: 0.8rem 1rem;
+  box-shadow: var(--edge);
 }
 
 /* the pixels: a solid, cut into dots by a mask. The lamp inside paints the
@@ -398,23 +406,6 @@ code,
   border-radius: 999px;
   padding: 0.36rem 0.66rem 0.34rem;
   box-shadow: var(--halo);
-  animation: switch-on 1.6s backwards;
-}
-
-/* unlit until the lamp arrives, then on in one step */
-@keyframes switch-on {
-  0% {
-    color: var(--text-3);
-    background: var(--fill);
-    box-shadow: none;
-    animation-timing-function: steps(1, end);
-  }
-  48% {
-    color: var(--text-3);
-    background: var(--fill);
-    box-shadow: none;
-    animation-timing-function: steps(1, start);
-  }
 }
 
 .status p {
@@ -437,8 +428,7 @@ code,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .status-lamp,
-  .status-badge {
+  .status-lamp {
     animation: none;
   }
 }
